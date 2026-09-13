@@ -446,7 +446,7 @@
     </div>
     <div class="hero__row">
       <a class="hero__btn" href="mailto:ben.akiva@tailorplayed.com?subject=Benefits%20-%20%D7%9C%D7%A4%D7%A8%D7%98%D7%99%D7%9D"><i class="ti ti-mail" aria-hidden="true"></i> לעוד פרטים - דברו איתי!</a>
-      <button type="button" class="hero__btn hero__btn--ghost" data-open-modal><i class="ti ti-login-2" aria-hidden="true"></i> כניסת תלמידים</button>
+      <a class="hero__btn hero__btn--ghost" href="https://platform.benefits-il.dev/login" rel="noopener"><i class="ti ti-login-2" aria-hidden="true"></i> כניסת תלמידים</a>
     </div>
   </div>
 </section>
@@ -623,7 +623,7 @@
     <p>כתבו לי כמה מילים על העבודה שלכם, ונבדוק יחד איזה מסלול יתאים לכם.</p>
     <div class="final__row">
       <a class="final__btn" href="mailto:ben.akiva@tailorplayed.com?subject=Benefits%20-%20%D7%9C%D7%A4%D7%A8%D7%98%D7%99%D7%9D"><i class="ti ti-mail" aria-hidden="true"></i> דברו איתי</a>
-      <button type="button" class="final__btn final__btn--ghost" data-open-modal><i class="ti ti-login-2" aria-hidden="true"></i> כניסת תלמידים</button>
+      <a class="final__btn final__btn--ghost" href="https://platform.benefits-il.dev/login" rel="noopener"><i class="ti ti-login-2" aria-hidden="true"></i> כניסת תלמידים</a>
     </div>
     <a class="final__mail" href="mailto:ben.akiva@tailorplayed.com">ben.akiva@tailorplayed.com</a>
   </div>
@@ -641,64 +641,7 @@
   </div>
 </footer>
 
-<!-- ════ MODAL — כניסת תלמידים ════ -->
-<div class="modal" id="students-modal" role="dialog" aria-modal="true" aria-labelledby="students-modal-title" aria-hidden="true">
-  <div class="modal__overlay" data-close-modal></div>
-  <div class="modal__card" tabindex="-1">
-    <img class="modal__img" src="assets/benjamin/phone.png" alt="" aria-hidden="true" loading="lazy" width="218" height="474">
-    <p class="modal__title" id="students-modal-title">בקרוב 😎</p>
-    <p class="modal__sub">כאן ייפתח אזור התלמידים של הקורס.</p>
-    <button type="button" class="modal__btn" data-close-modal><i class="ti ti-x" aria-hidden="true"></i> סגירה</button>
-  </div>
-</div>
-
 <script>
-  (function(){
-    /* ── students modal (works regardless of motion preference) ── */
-    var modal = document.getElementById('students-modal');
-    var card = modal.querySelector('.modal__card');
-    var lastTrigger = null;
-    var lockY = 0;
-    function openModal(btn){
-      lastTrigger = btn || null;
-      lockY = window.scrollY || document.documentElement.scrollTop || 0;
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden','false');
-      document.body.style.top = -lockY + 'px'; /* keep visual position while body is fixed */
-      document.body.classList.add('modal-open'); /* scroll lock */
-      card.focus();
-      document.addEventListener('keydown', onKey);
-    }
-    function closeModal(){
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden','true');
-      document.body.classList.remove('modal-open');
-      document.body.style.top = '';
-      window.scrollTo({ top:lockY, left:0, behavior:'instant' }); /* restore scroll position */
-      document.removeEventListener('keydown', onKey);
-      if(lastTrigger){ lastTrigger.focus(); lastTrigger = null; }
-    }
-    function onKey(e){
-      if(e.key === 'Escape'){ closeModal(); return; }
-      if(e.key !== 'Tab') return;
-      /* basic focus trap: keep Tab / Shift+Tab cycling inside the card */
-      var f = card.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])');
-      if(!f.length){ e.preventDefault(); card.focus(); return; }
-      var first = f[0], last = f[f.length - 1], active = document.activeElement;
-      if(e.shiftKey){
-        if(active === first || active === card || !card.contains(active)){ e.preventDefault(); last.focus(); }
-      } else if(active === last || !card.contains(active)){
-        e.preventDefault(); first.focus();
-      }
-    }
-    document.querySelectorAll('[data-open-modal]').forEach(function(b){
-      b.addEventListener('click', function(){ openModal(b); });
-    });
-    document.querySelectorAll('[data-close-modal]').forEach(function(b){
-      b.addEventListener('click', closeModal);
-    });
-  })();
-
   (function(){
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if(reduce) return;
