@@ -291,9 +291,13 @@
 
   /* ---------- the videos: out from their date, with a YouTube id ---------- */
   function today() {
-    var d = new Date(); /* the day in Israel */
-    try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d); }
-    catch (e) { return d.toISOString().slice(0, 10); }
+    var d = new Date(); /* now in Israel, "YYYY-MM-DDTHH:MM": a date in episodes.json may carry an hour, a bare date is midnight */
+    try {
+      var p = {};
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jerusalem', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+        .formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+      return p.year + '-' + p.month + '-' + p.day + 'T' + p.hour + ':' + p.minute;
+    } catch (e) { return d.toISOString().slice(0, 16); }
   }
   CC.today = today;
   function updateReleases(asOf) {
