@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-51 -135 142 142">
+<!-- Cancel Cancer: map, episode 7: research. Drawn in the Pixar kit (benefits-repos/pixar/experiments/remotion-cancel-cancer-brand/src/kit), approved at Pixar Gate 2 (12.10.2026); exported by tools/export-assets.mjs. Do not redraw. -->
+<g id="map-research"><g transform="translate(6 -78) rotate(-20)"><path d="M -2 34 H 2 Q 12 34 12 44 V 90 Q 12 100 2 100 H -2 Q -12 100 -12 90 V 44 Q -12 34 -2 34 Z" fill="#064E3B" stroke="#0F172A" stroke-width="5" transform="rotate(-25)"></path><circle r="48" fill="#38BDF8" stroke="#0F172A" stroke-width="6"></circle><circle r="36" fill="#BAE6FD" stroke="#0F172A" stroke-width="3"></circle><path d="M -22 -12 Q -18 -26 -4 -28" stroke="#FFFFFF" stroke-width="7" fill="none" stroke-linecap="round"></path></g></g>
+</svg>
