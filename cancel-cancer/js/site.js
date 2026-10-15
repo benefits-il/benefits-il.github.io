@@ -340,12 +340,18 @@
     if (c) { var src = document.getElementById(c.getAttribute('data-copy')); if (src) copyText(src.textContent, c, src); return; }
     var l = t.closest('.btn-copy-link');
     /* the link carries a mark, so Umami can count how many open it later (on the computer); the anchor lands on the install */
-    if (l) { copyText(l.getAttribute('data-url').split('#')[0].split('?')[0] + '?utm_source=copy-link#install', l, null); return; }
+    /* the link lands on the computer at the install step (#kit): on the phone the visitor already read what the kit needs */
+    if (l) { copyText(l.getAttribute('data-url').split('#')[0].split('?')[0] + '?utm_source=copy-link#kit', l, null); return; }
     /* an in-page link: open a closed step first, then scroll to it ourselves. Window 5: Lenis's own anchors landed
        half a screen short on a jump up the page (episode 1 to step 2, which now sits above it) */
     var a = t.closest('a[href^="#"]');
     if (a) {
       var id = a.getAttribute('href').slice(1), target = id && document.getElementById(id);
+      /* "להתקנה" in the bar (and the skip link) lands on the action itself: the copy button on the phone, the
+         install step on desktop (window 5). Without JS it is a plain link to the head of the install. */
+      if (id === 'install' && (a.classList.contains('hb-install') || a.classList.contains('skip'))) {
+        target = CC.desk ? document.getElementById('kit') : (document.querySelector('.go-box') || target);
+      }
       openTarget(id);
       if (target) { e.preventDefault(); goTo(target); try { history.pushState(null, '', '#' + id); } catch (err) { location.hash = id; } }
     }
