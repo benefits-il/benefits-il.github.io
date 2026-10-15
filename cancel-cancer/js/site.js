@@ -8,8 +8,10 @@
    of the scroll position, so scrolling back plays it back.
    Also here: the thin bar under the header (how much of the part you are in is read), Lenis for the mouse wheel, the
    road, Dino (on his window in his card until his second sentence, then a jump to the road, then walking with the
-   reader), the videos (out by date; on desktop the cover is beside the text, and a click plays it in place; nothing
-   goes to YouTube before a click), the copy buttons, the technical words, the install steps (closed on the phone).
+   reader), the videos (out by date; no player on the site since window 5: each video is a row of network buttons),
+   the copy buttons, the technical words, the install steps (closed on the phone).
+   Window 5 (Ben, 15.10, 20:30): the install comes first, right after the opening; then the story, mom and Dino, the
+   list and the videos, as before. Dino jumps off his sill at his second paragraph and walks along the videos.
    "No motion" comes from the device setting only. Without JS none of this runs, and the page is complete as it
    stands in the HTML. */
 (function () {
@@ -35,7 +37,7 @@
   var lenis = null;
   function startLenis() {
     if (lenis || typeof window.Lenis !== 'function') return;
-    try { lenis = new window.Lenis({ autoRaf: true, lerp: 0.1, anchors: true }); CC.lenis = lenis; } catch (e) { lenis = null; }
+    try { lenis = new window.Lenis({ autoRaf: true, lerp: 0.1 }); CC.lenis = lenis; } catch (e) { lenis = null; }
   }
   function dropLenisClass() { ['lenis', 'lenis-smooth', 'lenis-scrolling', 'lenis-stopped'].forEach(function (c) { root.classList.remove(c); }); }
   function stopLenis() { if (lenis) { lenis.destroy(); lenis = null; CC.lenis = null; } dropLenisClass(); }
@@ -82,8 +84,6 @@
     var probe = svg.querySelector('path[data-road]'), L = probe.getTotalLength(), N = 900, table = [];
     for (var k = 0; k <= N; k++) { var pt = probe.getPointAtLength(L * k / N); table.push({ x: pt.x, y: pt.y }); }
     roadInfo = CC.road = { top: rTop, left: rLeft, W: W, H: H, table: table, endY: endY };
-    var endEl = roadEl.querySelector('.road-end');
-    if (endEl) { var ew = endEl.offsetWidth; endEl.style.left = clamp(last.x - ew / 2, 4, W - ew - 4) + 'px'; endEl.style.top = (endY - endEl.offsetHeight * 0.55) + 'px'; }
   }
   function roadX(y) {
     var t = roadInfo && roadInfo.table; if (!t) return 0;
@@ -302,48 +302,19 @@
   CC.today = today;
   function updateReleases(asOf) {
     var day = asOf || today(), newest = null;
-    q(document, '.ep[data-ep]').forEach(function (st) {
+    q(document, '.ep[data-ep], .vrow[data-ep]').forEach(function (st) {
       var yt = st.getAttribute('data-yt'), date = st.getAttribute('data-date');
       var isOut = yt === 'demo' || !!(yt && date && date <= day);
       st.classList.toggle('is-out', isOut);
+      if (!st.classList.contains('ep')) return;
       if (isOut) newest = st.getAttribute('data-ep');
       var row = document.querySelector('.map-list li[data-ep="' + st.getAttribute('data-ep') + '"]');
       if (row) row.classList.toggle('is-out', isOut);
     });
     q(document, '.map-list li').forEach(function (li) { li.classList.toggle('is-new', li.getAttribute('data-ep') === newest); });
-    placeCovers(); measureSoon();
-  }
-  CC.updateReleases = updateReleases;
-  /* on desktop the local cover is beside the text from the start; on the phone it opens with "לצפייה" */
-  function placeCovers() {
-    q(document, '.ep').forEach(function (st) {
-      var pl = st.querySelector('.player'), btn = st.querySelector('.btn-watch'), outNow = st.classList.contains('is-out');
-      if (!pl) return;
-      if (CC.desk && outNow) { pl.hidden = false; if (btn) btn.setAttribute('aria-expanded', 'true'); }
-      else if (!pl.querySelector('.live, .stand-in') || !outNow) { pl.hidden = true; if (btn) btn.setAttribute('aria-expanded', 'false'); }
-    });
-  }
-  /* the player is made only on a tap: until then nothing goes to YouTube */
-  function load(st, frame) {
-    if (!st || !frame || frame.classList.contains('live') || !st.classList.contains('is-out')) return;
-    var yt = st.getAttribute('data-yt');
-    if (yt === 'demo') {
-      if (!frame.querySelector('.stand-in')) { var n = document.createElement('span'); n.className = 'stand-in'; n.setAttribute('data-chrome', ''); n.textContent = 'בתצוגה המקדימה אין נגן אמיתי'; frame.appendChild(n); }
-    } else if (/^[\w-]{6,20}$/.test(yt)) {
-      var f = document.createElement('iframe');
-      f.src = 'https://www.youtube-nocookie.com/embed/' + yt + '?autoplay=1&playsinline=1&rel=0';
-      f.title = st.querySelector('.ep-name').textContent; f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.setAttribute('allowfullscreen', '');
-      frame.innerHTML = ''; frame.appendChild(f); frame.classList.add('live');
-    }
-  }
-  function openPlayer(btn) {
-    var st = btn.closest('.ep'), pl = document.getElementById(btn.getAttribute('aria-controls'));
-    if (!st || !pl) return;
-    var open = pl.hidden;
-    pl.hidden = !open; btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    if (open) load(st, pl.querySelector('.player-frame'));
     measureSoon();
   }
+  CC.updateReleases = updateReleases;
 
   /* ---------- clicks: copy, the page link, watch, the cover, the technical words, links to a closed step ---------- */
   function copyText(text, btn, selectEl) {
@@ -352,6 +323,12 @@
     var select = function () { if (!selectEl) return; var r = document.createRange(); r.selectNodeContents(selectEl); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, select); else select();
   }
+  function goTo(el) {
+    var y = Math.max(0, docTop(el) - (parseFloat(getComputedStyle(el).scrollMarginTop) || TOP));
+    if (lenis) lenis.scrollTo(y, { duration: Math.min(1.6, 0.6 + Math.abs(y - window.scrollY) / (CC.vh * 8)), force: true });
+    else window.scrollTo({ top: y, behavior: CC.still ? 'auto' : 'smooth' });
+  }
+  CC.goTo = goTo;
   function openTarget(id) {
     var el = id && document.getElementById(id); if (!el) return;
     var d = el.tagName === 'DETAILS' ? el : el.closest('details');
@@ -362,13 +339,16 @@
     var c = t.closest('[data-copy]');
     if (c) { var src = document.getElementById(c.getAttribute('data-copy')); if (src) copyText(src.textContent, c, src); return; }
     var l = t.closest('.btn-copy-link');
-    if (l) { copyText(l.getAttribute('data-url').split('#')[0] + '#install', l, null); return; }
-    var w = t.closest('.btn-watch');
-    if (w) { e.preventDefault(); openPlayer(w); return; }
-    var fr = t.closest('.ep .player-frame');
-    if (fr) { load(fr.closest('.ep'), fr); return; }
+    /* the link carries a mark, so Umami can count how many open it later (on the computer); the anchor lands on the install */
+    if (l) { copyText(l.getAttribute('data-url').split('#')[0].split('?')[0] + '?utm_source=copy-link#install', l, null); return; }
+    /* an in-page link: open a closed step first, then scroll to it ourselves. Window 5: Lenis's own anchors landed
+       half a screen short on a jump up the page (episode 1 to step 2, which now sits above it) */
     var a = t.closest('a[href^="#"]');
-    if (a) openTarget(a.getAttribute('href').slice(1));
+    if (a) {
+      var id = a.getAttribute('href').slice(1), target = id && document.getElementById(id);
+      openTarget(id);
+      if (target) { e.preventDefault(); goTo(target); try { history.pushState(null, '', '#' + id); } catch (err) { location.hash = id; } }
+    }
     var term = t.closest('.term');
     q(document, '.term.open').forEach(function (o) { if (o !== term) { o.classList.remove('open'); o.setAttribute('aria-expanded', 'false'); } });
     if (term) { var op = !term.classList.contains('open'); term.classList.toggle('open', op); term.setAttribute('aria-expanded', op ? 'true' : 'false'); if (op) placeTip(term); }
@@ -403,14 +383,14 @@
   var dirty = true, dirtyAll = true, lastY = -1, mTimer = 0;
   function measure() {
     CC.vh = window.innerHeight; CC.vw = window.innerWidth; CC.desk = CC.vw >= 900;
-    placeSteps(); placeCovers();
+    placeSteps();
     buildRoad(); measurePars();
     rvs.forEach(function (r) { var t = r.el.style.transform; r.el.style.transform = ''; r.top = docTop(r.el); r.h = r.el.offsetHeight; r.el.style.transform = t; });
     Object.keys(chunks).forEach(function (k) { Object.keys(chunks[k]).forEach(function (n) { var c = chunks[k][n], t = c.el.style.transform; c.el.style.transform = ''; c.top = docTop(c.el); c.h = c.el.offsetHeight; c.el.style.transform = t; }); });
     cards.forEach(function (cd) { var t = cd.el.style.transform; cd.el.style.transform = ''; cd.top = docTop(cd.el); cd.h = cd.el.offsetHeight; cd.el.style.transform = t; });
     parts.forEach(function (p) {
       p.top = Infinity; p.bot = -Infinity;
-      p.els.forEach(function (el) { var tp = docTop(el); p.top = Math.min(p.top, tp); p.bot = Math.max(p.bot, tp + el.offsetHeight); });
+      p.els.forEach(function (el) { if (!el.getClientRects().length) return; var tp = docTop(el); p.top = Math.min(p.top, tp); p.bot = Math.max(p.bot, tp + el.offsetHeight); });
     });
     poseSts.forEach(function (p) { p.top = docTop(p.el); p.bot = p.top + p.el.offsetHeight; });
     pops.forEach(function (p) { p.top = docTop(p.el); p.h = p.el.offsetHeight; });
@@ -443,10 +423,10 @@
   function epOf(el) { var s = el.closest('[data-ep]'); return s ? s.getAttribute('data-ep') : undefined; }
   function label(el) { return (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40); }
   var TRACK = [
-    ['.hb-watch', 'bar-videos'], ['.hb-install', 'bar-install'], ['.btn-main', 'opening-videos'], ['.skip', 'skip-link'],
+    ['.hb-watch', 'bar-videos'], ['.hb-install', 'bar-install'], ['.btn-story-read', 'opening-story-read'],
+    ['.btn-story-video', 'opening-story-video'], ['.skip', 'skip-link'],
     ['.map-list a', 'map-row', function (el) { return { ep: epOf(el) }; }],
-    ['.btn-watch', 'watch', function (el) { return { ep: epOf(el) }; }],
-    ['.player-net a', 'video-on-network', function (el) { return { ep: epOf(el), network: label(el) }; }],
+    ['.vnet', 'video-on-network', function (el) { return { ep: el.getAttribute('data-ep'), network: el.getAttribute('data-net'), where: el.getAttribute('data-where') }; }],
     ['.step-link', 'episode-to-step', function (el) { return { ep: epOf(el), step: (el.getAttribute('href') || '').replace('#step-', '') }; }],
     ['.kit-step > summary', 'step-open', function (el) { return el.parentNode.open ? null : { step: stepOf(el) }; }],
     ['.kit-more summary', 'more-open', function (el) { return el.parentNode.open ? null : { part: label(el) }; }],
@@ -469,6 +449,23 @@
       return;
     }
   }, true);
+
+  /* install-view (GPT's suggestion, window 5): once per visit, when the install's action is on the screen: the copy
+     button on the phone, the plugin address on desktop. Says whether a visitor reached the place that matters at all. */
+  (function () {
+    if (!window.IntersectionObserver) return;
+    var sent = false;
+    var io2 = new IntersectionObserver(function (es) {
+      es.forEach(function (en) {
+        if (sent || !en.isIntersecting || !en.target.offsetParent) return;
+        if (!window.umami || typeof window.umami.track !== 'function') return;
+        sent = true;
+        try { window.umami.track('install-view', { device: CC.desk ? 'desktop' : 'phone' }); } catch (err) { /* counting never breaks the page */ }
+        io2.disconnect();
+      });
+    }, { threshold: 0.6 });
+    q(document, '.btn-copy-link, #step-install .copy-box').forEach(function (el) { io2.observe(el); });
+  })();
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
