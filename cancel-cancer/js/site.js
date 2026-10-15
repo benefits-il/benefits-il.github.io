@@ -436,5 +436,39 @@
     if (window.ResizeObserver) { var ro = new ResizeObserver(measureSoon); ro.observe(document.querySelector('.cc') || document.body); }
     window.requestAnimationFrame(tick);
   }
+  /* the clicks, counted by Umami (Ben, 15.10: "אני רוצה אנליטיקס"). Only the event's name and the station, step,
+     file or network go out; nothing typed, nothing personal. Without Umami on the page (no id in links.json, a
+     blocker, no JS) nothing is sent and nothing changes. Umami counts the visits and where they came from by itself. */
+  function stepOf(el) { var s = el.closest('.kit-step'); return s ? s.id.replace('step-', '') : undefined; }
+  function epOf(el) { var s = el.closest('[data-ep]'); return s ? s.getAttribute('data-ep') : undefined; }
+  function label(el) { return (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40); }
+  var TRACK = [
+    ['.hb-watch', 'bar-videos'], ['.hb-install', 'bar-install'], ['.btn-main', 'opening-videos'], ['.skip', 'skip-link'],
+    ['.map-list a', 'map-row', function (el) { return { ep: epOf(el) }; }],
+    ['.btn-watch', 'watch', function (el) { return { ep: epOf(el) }; }],
+    ['.player-net a', 'video-on-network', function (el) { return { ep: epOf(el), network: label(el) }; }],
+    ['.step-link', 'episode-to-step', function (el) { return { ep: epOf(el), step: (el.getAttribute('href') || '').replace('#step-', '') }; }],
+    ['.kit-step > summary', 'step-open', function (el) { return el.parentNode.open ? null : { step: stepOf(el) }; }],
+    ['.kit-more summary', 'more-open', function (el) { return el.parentNode.open ? null : { part: label(el) }; }],
+    ['.btn-copy-link', 'phone-copy-link'],
+    ['.btn-copy', 'copy', function (el) { return { step: stepOf(el), ep: epOf(el), box: el.getAttribute('data-copy') }; }],
+    ['.btn-dl', 'download', function (el) { return { file: el.getAttribute('download'), step: stepOf(el) }; }],
+    ['.term', 'word-tip', function (el) { return el.classList.contains('open') ? null : { word: (el.firstChild && el.firstChild.textContent || '').trim() }; }],
+    ['a[href^="mailto:"]', 'mail'], ['.btn-site', 'benefits-site'], ['.net', 'follow', function (el) { return { network: label(el) }; }],
+    ['.tp-link', 'story-link', function (el) { return { to: (el.getAttribute('href') || '').replace(/^https?:\/\//, '').slice(0, 40) }; }]
+  ];
+  document.addEventListener('click', function (e) {
+    if (!window.umami || typeof window.umami.track !== 'function' || !e.target.closest) return;
+    for (var i = 0; i < TRACK.length; i++) {
+      var el = e.target.closest(TRACK[i][0]);
+      if (!el) continue;
+      var data = TRACK[i][2] ? TRACK[i][2](el) : {};
+      if (data === null) return;
+      for (var k in data) if (data[k] === undefined || data[k] === '') delete data[k];
+      try { window.umami.track(TRACK[i][1], data); } catch (err) { /* counting never breaks the page */ }
+      return;
+    }
+  }, true);
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
