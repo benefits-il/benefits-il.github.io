@@ -340,17 +340,19 @@
     if (c) { var src = document.getElementById(c.getAttribute('data-copy')); if (src) copyText(src.textContent, c, src); return; }
     var l = t.closest('.btn-copy-link');
     /* the link carries a mark, so Umami can count how many open it later (on the computer); the anchor lands on the install */
-    /* the link lands on the computer at the install step (#kit): on the phone the visitor already read what the kit needs */
-    if (l) { copyText(l.getAttribute('data-url').split('#')[0].split('?')[0] + '?utm_source=copy-link#kit', l, null); return; }
+    /* the link lands on the computer at the install guide (#step-install, 16.10; it was the steps, #kit): on the phone
+       the visitor already read what the kit needs */
+    if (l) { copyText(l.getAttribute('data-url').split('#')[0].split('?')[0] + '?utm_source=copy-link#step-install', l, null); return; }
     /* an in-page link: open a closed step first, then scroll to it ourselves. Window 5: Lenis's own anchors landed
        half a screen short on a jump up the page (episode 1 to step 2, which now sits above it) */
     var a = t.closest('a[href^="#"]');
     if (a) {
       var id = a.getAttribute('href').slice(1), target = id && document.getElementById(id);
-      /* "להתקנה" in the bar (and the skip link) lands on the action itself: the copy button on the phone, the
-         install step on desktop (window 5). Without JS it is a plain link to the head of the install. */
+      /* "להתקנה" in the bar (and the skip link) lands on the action itself: the box at the head of the install, with
+         the copy button on the phone and the install guide on both (window 5; desktop since 16.10, it was the
+         install step). Without JS it is a plain link to the head of the install. */
       if (id === 'install' && (a.classList.contains('hb-install') || a.classList.contains('skip'))) {
-        target = CC.desk ? document.getElementById('kit') : (document.querySelector('.go-box') || target);
+        target = document.querySelector('.go-box') || target;
       }
       openTarget(id);
       if (target) { e.preventDefault(); goTo(target); try { history.pushState(null, '', '#' + id); } catch (err) { location.hash = id; } }
@@ -425,7 +427,7 @@
   /* the clicks, counted by Umami (Ben, 15.10: "אני רוצה אנליטיקס"). Only the event's name and the station, step,
      file or network go out; nothing typed, nothing personal. Without Umami on the page (no id in links.json, a
      blocker, no JS) nothing is sent and nothing changes. Umami counts the visits and where they came from by itself. */
-  function stepOf(el) { var s = el.closest('.kit-step'); return s ? s.id.replace('step-', '') : undefined; }
+  function stepOf(el) { var s = el.closest('.kit-step, #step-install'); return s ? s.id.replace('step-', '') : undefined; }
   function epOf(el) { var s = el.closest('[data-ep]'); return s ? s.getAttribute('data-ep') : undefined; }
   function label(el) { return (el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 40); }
   var TRACK = [
