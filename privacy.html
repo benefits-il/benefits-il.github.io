@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Benefits · מדיניות פרטיות</title>
+<meta name="theme-color" content="#064E3B" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Varela+Round&display=swap" rel="stylesheet">
+<script>
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('benefits-theme'); } catch (e) {}
+    if (saved === 'dark' || saved === 'light') document.documentElement.dataset.theme = saved;
+  })();
+</script>
+<style>
+  :root{
+    --canvas:#FFFBEB; --paper:#FFFFFF; --ink:#0F172A; --muted:#334155; --anchor:#047857;
+    --depth:#064E3B; --line:#E6DDBB; --link:#047857;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --canvas:#022C22; --paper:#064E3B; --ink:#FFFBEB; --muted:#D1FAE5; --line:#0B5D4A; --link:#6EE7B7;
+    }
+  }
+  :root[data-theme="dark"]{
+    --canvas:#022C22; --paper:#064E3B; --ink:#FFFBEB; --muted:#D1FAE5; --line:#0B5D4A; --link:#6EE7B7;
+  }
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ font-family:'Varela Round', system-ui, sans-serif; background:var(--canvas); color:var(--ink);
+    font-size:18px; line-height:1.7; }
+  header{ display:flex; align-items:center; justify-content:space-between; gap:16px;
+    max-width:760px; margin:0 auto; padding:24px 20px 8px; }
+  .brand{ font-family:'Rubik'; font-weight:800; font-size:22px; color:var(--ink); text-decoration:none; }
+  .toggle{ display:grid; place-items:center; width:44px; height:44px; border-radius:999px; cursor:pointer;
+    background:var(--paper); color:var(--ink); border:2px solid var(--ink); }
+  .toggle svg{ width:22px; height:22px; }
+  .toggle .sun{ display:none; }
+  .is-dark .toggle .sun{ display:block; }
+  .is-dark .toggle .moon{ display:none; }
+  main{ max-width:760px; margin:0 auto; padding:8px 20px 64px; }
+  article{ background:var(--paper); border:2px solid var(--line); border-radius:20px; padding:28px 24px; margin-top:24px; }
+  h1{ font-family:'Rubik'; font-weight:800; font-size:32px; line-height:1.25; margin:0 0 6px; }
+  h2{ font-family:'Rubik'; font-weight:700; font-size:22px; margin:28px 0 8px; }
+  p, li{ color:var(--ink); }
+  .updated{ color:var(--muted); margin:0 0 8px; }
+  ul{ padding-inline-start:22px; margin:8px 0; }
+  li{ margin:4px 0; }
+  a{ color:var(--link); font-weight:700; }
+  [dir="ltr"]{ text-align:left; }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="https://benefits-il.dev">Benefits</a>
+  <button class="toggle" id="theme-toggle" type="button" aria-label="מצב כהה / בהיר">
+    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c.13 0 .26 0 .39 0a7.5 7.5 0 0 0 7.92 12.45A9 9 0 1 1 12 3z"/></svg>
+    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+  </button>
+</header>
+<main>
+  <article>
+    <h1>מדיניות פרטיות</h1>
+    <p class="updated">פלטפורמת הקורס Benefits · עודכן ב-4 בנובמבר 2026</p>
+
+    <p>Benefits הוא קורס AI של בן עקיבא. הדף הזה מסביר אילו פרטים פלטפורמת הקורס (platform.benefits-il.dev) שומרת, למה, ומה אפשר לבקש.</p>
+
+    <h2>מה אנחנו שומרים</h2>
+    <ul>
+      <li><strong>כשמתחברים עם Google:</strong> שם, כתובת מייל ותמונת פרופיל. אנחנו לא מקבלים את הסיסמה שלכם, ואין לנו גישה למיילים, לאנשי הקשר או לקבצים שלכם.</li>
+      <li><strong>מה שאתם עושים בקורס:</strong> התקדמות, פתקים, שמורים, הגשות, התעודה, האווטאר שבחרתם או התמונה שהעליתם, השפה וההעדפות.</li>
+      <li><strong>נתוני שימוש בסיסיים:</strong> אילו עמודים ופעולות, כדי לשפר את הקורס.</li>
+      <li><strong>בקשת גישה:</strong> השם והמייל שמילאתם.</li>
+    </ul>
+
+    <h2>למה</h2>
+    <p>כדי לתת לכם גישה לקורס, לשמור את ההתקדמות שלכם, לשלוח מיילים על הקורס (גישה, תעודה, הודעות למחזור) ולשפר את הקורס.</p>
+
+    <h2>עם מי זה משותף</h2>
+    <p>רק עם הספקים שמפעילים את הפלטפורמה בשבילנו: Clerk (התחברות), Convex (שמירת הנתונים), Cloudflare (אחסון האתר) ו-Resend (שליחת מיילים). אנחנו לא מוכרים מידע, לא מציגים פרסומות ולא משתפים מידע למטרות שיווק.</p>
+
+    <h2>כמה זמן ומה אפשר לבקש</h2>
+    <p>הפרטים נשמרים כל עוד יש לכם חשבון בפלטפורמה. אפשר לבקש עותק של הפרטים שלכם, תיקון או מחיקה, בכתובת <a href="mailto:developing@tailorplayed.com">developing@tailorplayed.com</a>.</p>
+
+    <h2>שינויים</h2>
+    <p>אם המדיניות תשתנה, נעדכן אותה בדף הזה ואת התאריך שלמעלה.</p>
+  </article>
+
+  <article dir="ltr" lang="en">
+    <h1>Privacy Policy</h1>
+    <p class="updated">The Benefits course platform · Updated 4 November 2026</p>
+
+    <p>Benefits is an AI course by Ben Akiva. This page explains what the course platform (platform.benefits-il.dev) keeps, why, and what you can ask for.</p>
+
+    <h2>What we keep</h2>
+    <ul>
+      <li><strong>When you sign in with Google:</strong> your name, email address and profile picture. We never receive your password, and we have no access to your email, contacts or files.</li>
+      <li><strong>What you do in the course:</strong> your progress, notes, saved items, submissions, certificate, the avatar you chose or the photo you uploaded, your language and preferences.</li>
+      <li><strong>Basic usage data:</strong> which pages and actions, to improve the course.</li>
+      <li><strong>Access requests:</strong> the name and email you entered.</li>
+    </ul>
+
+    <h2>Why</h2>
+    <p>To give you access to the course, keep your progress, send you emails about the course (access, certificate, cohort messages) and improve the course.</p>
+
+    <h2>Who it is shared with</h2>
+    <p>Only the providers that run the platform for us: Clerk (sign-in), Convex (data storage), Cloudflare (site hosting) and Resend (email). We do not sell data, show ads or share data for marketing.</p>
+
+    <h2>How long, and what you can ask for</h2>
+    <p>Your details are kept while you have an account on the platform. You can ask for a copy, a correction or deletion at <a href="mailto:developing@tailorplayed.com">developing@tailorplayed.com</a>.</p>
+
+    <h2>Changes</h2>
+    <p>If this policy changes, we will update this page and the date above.</p>
+  </article>
+</main>
+<script>
+  (function () {
+    var root = document.documentElement;
+    var media = window.matchMedia('(prefers-color-scheme: dark)');
+    function isDark() { return root.dataset.theme ? root.dataset.theme === 'dark' : media.matches; }
+    function paint() { document.body.classList.toggle('is-dark', isDark()); }
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      root.dataset.theme = isDark() ? 'light' : 'dark';
+      try { localStorage.setItem('benefits-theme', root.dataset.theme); } catch (e) {}
+      paint();
+    });
+    media.addEventListener('change', paint);
+    paint();
+  })();
+</script>
+</body>
+</html>
