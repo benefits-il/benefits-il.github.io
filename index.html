@@ -25,6 +25,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Varela+Round&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.0/dist/tabler-icons.min.css">
+<!-- GSAP + ScrollTrigger drive only the fix diagram in the outcomes section; the page works fully without them -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
 <style>
   :root{
     --canvas:#FFFBEB; --paper:#FFFFFF; --soft:#FEF3C7;
@@ -42,12 +45,11 @@
   /* on yellow surfaces the sunshine ring vanishes — use ink there */
   .manifesto :is(a,button):focus-visible,
   .hero__btn:focus-visible, .final__btn:focus-visible,
-  .track__cta:focus-visible, .rung__card:focus-visible,
-  .modal__btn:focus-visible{ outline-color:var(--ink); }
+  .track__cta:focus-visible, .rung__card:focus-visible{ outline-color:var(--ink); }
   ::-webkit-scrollbar{ width:12px; } ::-webkit-scrollbar-thumb{ background:var(--anchor); border:3px solid var(--canvas); border-radius:6px; }
   .ltr{ direction:ltr; unicode-bidi:isolate; }
   /* RTL action buttons: keep the leading <i> in DOM but render it on the LEFT (end of the line) */
-  .hero__btn > i, .final__btn > i, .track__cta > i, .modal__btn > i{ order:2; }
+  .hero__btn > i, .final__btn > i, .track__cta > i{ order:2; }
   .wrap{ max-width:1140px; margin:0 auto; padding:0 32px; }
   .sec{ padding:96px 0; position:relative; }
 
@@ -120,7 +122,7 @@
   .manifesto p em{ font-style:normal; background:var(--ink); color:var(--sunshine); padding:0 12px; border-radius:9px; white-space:nowrap; }
 
   /* ════ shared section head ════ */
-  .sec__kick{ display:inline-flex; align-items:center; gap:8px; font-family:'Rubik'; font-weight:800; font-size:14px;
+  .sec__kick{ display:inline-flex; align-items:center; gap:8px; font-family:'Rubik'; font-weight:800; font-size:15px;
     color:var(--anchor); background:var(--green-soft); border:2px solid var(--anchor); border-radius:999px; padding:7px 17px; margin-bottom:18px; }
   .sec__title{ font-family:'Rubik'; font-weight:900; font-size:clamp(34px,5.4vw,58px); line-height:1.03; letter-spacing:-1.6px; color:var(--ink); margin:0 0 14px; }
   .sec__title .u{ background:linear-gradient(180deg, transparent 58%, var(--sunshine) 58%); padding:0 8px; }
@@ -128,22 +130,23 @@
 
   /* ── wrap hygiene: no ugly mid-phrase breaks ── */
   .hero h1, .hero__hline, .sec__title, .manifesto p, .final h2, .cell h3, .rung__card h3, h1, h2, h3{ text-wrap:balance; }
-  .hero__deck, .sec__lead, .cell p, .rung__card p, .final p, .story p, .fit__row p, .track p, p{ text-wrap:pretty; overflow-wrap:break-word; }
+  .hero__deck, .sec__lead, .rung__card p, .final p, .story p, .fit__row p, .track p, p{ text-wrap:pretty; overflow-wrap:break-word; }
   .hero__hline .u, .sec__title .u, .nw{ white-space:nowrap; }
 
   /* ════ STORY + who-I-am (רקע canvas) ════ */
-  .story__grid{ display:grid; grid-template-columns:1.15fr .85fr; gap:44px; margin-top:28px; align-items:start; }
+  .story__grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:40px; margin-top:28px; align-items:start; }
   .story__prose{ max-width:720px; }
-  .story__prose p{ font-size:21px; line-height:1.7; color:var(--gray-700); margin:0 0 20px; }
+  /* the story reads in short chunks: a comfortable measure (about 60 characters), roomy lines, clear gaps */
+  .story__prose p{ max-width:30em; font-size:21px; line-height:1.8; color:var(--gray-700); margin:0 0 26px; }
   .story__prose p:last-child{ margin-bottom:0; }
   .story__aside{ position:relative; display:flex; flex-direction:column; align-items:center; }
   /* Benjamin stands ON the bio card: render him above (order:-1), let his feet overlap the card's top edge */
   .bio{ position:relative; z-index:1; background:var(--paper); border:3px solid var(--ink); border-radius:22px; padding:34px 28px 26px; box-shadow:8px 8px 0 0 var(--ink); }
   .bio__name{ font-family:'Rubik'; font-weight:900; font-size:26px; color:var(--ink); margin:0 0 3px; line-height:1.1; }
   .bio__role{ font-family:'Rubik'; font-weight:700; font-size:15px; color:var(--anchor); margin:0 0 14px; }
-  .bio__body{ font-size:16px; line-height:1.6; color:var(--gray-700); margin:0; }
+  .bio__body{ font-size:18px; line-height:1.6; color:var(--gray-700); margin:0; }
   .benjamin{ display:block; height:200px; width:auto; flex:none; }
-  .benjamin--story{ order:-1; position:relative; z-index:2; height:460px; margin-bottom:-46px; pointer-events:none; }
+  .benjamin--story{ order:-1; position:relative; z-index:2; height:310px; margin-bottom:-32px; pointer-events:none; }
 
   /* ════ FIT (מתאים לכם אם) ════ */
   .fit__list{ display:grid; gap:16px; margin-top:44px; max-width:920px; }
@@ -189,17 +192,17 @@
   .rung__card .ltr{ font-weight:700; }
   .rung:nth-child(even) .rung__card{ background:#FFFEF8; }
 
-  /* ════ SECTION 2 — SHOWCASE (לא רק תשתמשו. תבנו.) — one big grid of everything ════ */
-  .build{ background:var(--paper); border-top:4px solid var(--ink); border-bottom:4px solid var(--ink); }
-  .show-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:20px; margin-top:52px; }
-  .cell{ position:relative; background:var(--canvas); border:3px solid var(--ink); border-radius:20px; padding:24px 22px;
-    box-shadow:6px 6px 0 0 var(--ink); transition:transform .16s, box-shadow .16s; }
-  .cell:hover{ transform:translate(-3px,-3px); box-shadow:9px 9px 0 0 var(--ink); }
-  .cell__ic{ width:54px; height:54px; border-radius:15px; border:3px solid var(--ink); display:grid; place-items:center;
-    font-size:28px; color:#fff; box-shadow:3px 3px 0 0 var(--ink); margin-bottom:15px; }
-  .cell h3{ font-family:'Rubik'; font-weight:900; font-size:21px; color:var(--ink); margin:0 0 5px; line-height:1.18; }
+  /* ════ SECTION 2 — SHOWCASE (מה תבנו ותפיקו) — 15 chips: title + icon, wrapping ════ */
+  /* overflow-x:clip keeps the chips' 125% landing scale inside the page width on phones (the vertical axis stays visible) */
+  .build{ background:var(--paper); border-top:4px solid var(--ink); border-bottom:4px solid var(--ink); overflow-x:clip; }
+  .show-grid{ display:flex; flex-wrap:wrap; justify-content:center; gap:14px; margin-top:52px; }
+  .cell{ position:relative; display:inline-flex; align-items:center; gap:12px; background:var(--paper); border:3px solid var(--ink); border-radius:999px;
+    padding:12px 20px; box-shadow:3px 3px 0 0 var(--ink); transition:transform .16s, box-shadow .16s; }
+  .cell:hover{ transform:translate(-2px,-2px); box-shadow:5px 5px 0 0 var(--ink); }
+  .cell__ic{ width:34px; height:34px; border-radius:10px; border:2.5px solid var(--ink); display:grid; place-items:center;
+    font-size:19px; color:#fff; }
+  .cell h3{ font-family:'Rubik'; font-weight:800; font-size:20px; color:var(--ink); margin:0; line-height:1.2; }
   .cell h3 .en{ font-weight:700; font-size:15px; color:var(--anchor); direction:ltr; unicode-bidi:isolate; }
-  .cell p{ font-size:18px; color:var(--gray-700); margin:0; line-height:1.45; }
   /* color cycle through the Memphis palette */
   .cell:nth-child(6n+1) .cell__ic{ background:var(--anchor); }
   .cell:nth-child(6n+2) .cell__ic{ background:var(--coral); }
@@ -207,9 +210,6 @@
   .cell:nth-child(6n+4) .cell__ic{ background:var(--sky); }
   .cell:nth-child(6n+5) .cell__ic{ background:var(--ui-green); }
   .cell:nth-child(6n+6) .cell__ic{ background:var(--sunshine); color:var(--ink); }
-  @media (max-width:1024px){ .show-grid{ grid-template-columns:repeat(3,1fr); } }
-  @media (max-width:760px){ .show-grid{ grid-template-columns:repeat(2,1fr); gap:16px; } }
-  @media (max-width:430px){ .show-grid{ grid-template-columns:1fr; } }
 
   /* ════ TRACKS (המסלולים) ════ */
   .tracks{ background:var(--canvas); position:relative; }
@@ -217,20 +217,24 @@
   .track{ background:var(--paper); border:3px solid var(--ink); border-radius:20px; padding:26px 28px; box-shadow:6px 6px 0 0 var(--ink);
     transition:transform .16s, box-shadow .16s; }
   .track:hover{ transform:translate(-3px,-3px); box-shadow:9px 9px 0 0 var(--ink); }
+  /* the full course is the flagship track */
+  .track:first-child{ border-width:3.5px; box-shadow:8px 8px 0 0 var(--ink); background:linear-gradient(180deg, var(--green-soft) 0 8px, var(--paper) 8px 100%); }
   .track h3{ font-family:'Rubik'; font-weight:900; font-size:24px; color:var(--ink); margin:0 0 8px; line-height:1.18; }
   .track p{ font-size:20px; color:var(--gray-700); margin:0; line-height:1.55; }
-  .track__foot{ display:flex; align-items:center; gap:20px; flex-wrap:wrap; justify-content:center; margin-top:40px; }
+  /* Benjamin and the CTA framed together */
+  .track__foot{ display:flex; align-items:center; gap:28px; flex-wrap:wrap; justify-content:center; max-width:720px; margin:40px auto 0; padding:22px 32px;
+    background:var(--soft); border:3px solid var(--ink); border-radius:28px; box-shadow:5px 5px 0 0 var(--ink); }
   .track__cta{ display:inline-flex; align-items:center; gap:11px; background:var(--sunshine); color:var(--ink);
     border:3px solid var(--ink); border-radius:999px; padding:17px 34px; font-family:'Rubik'; font-weight:800; font-size:19px;
     box-shadow:0 7px 0 0 var(--ink); text-decoration:none; transition:transform .15s, box-shadow .15s; }
   .track__cta:hover{ transform:translateY(-3px); box-shadow:0 10px 0 0 var(--ink); }
   .track__cta:active{ transform:translateY(3px); box-shadow:0 3px 0 0 var(--ink); }
-  .benjamin--tracks{ height:290px; }
+  .benjamin--tracks{ height:210px; margin-top:-36px; margin-bottom:-22px; }
   @media (max-width:760px){
     .tracks__grid{ grid-template-columns:1fr; }
     /* thumbsup ABOVE the CTA button, tighter rhythm all the way down */
-    .track__foot{ flex-direction:column; gap:12px; margin-top:24px; }
-    .benjamin--tracks{ order:-1; height:300px; }
+    .track__foot{ flex-direction:column; gap:12px; padding:0 20px 24px; margin-top:64px; }
+    .benjamin--tracks{ order:-1; height:210px; margin-top:-44px; margin-bottom:0; }
     /* below ~760 the one-row CTA pair reaches the wave's zone — no clean spot, so hide it */
     .benjamin--final{ display:none; }
   }
@@ -264,7 +268,7 @@
      The JS engine reads the computed gap, so changing it here stays wrap-safe. */
   @media (max-width:760px){
     .belt__track{ gap:12px; }
-    .chip{ font-size:14px; padding:9px 15px; gap:8px; box-shadow:3px 3px 0 0 var(--ink); }
+    .chip{ font-size:15px; padding:9px 15px; gap:8px; box-shadow:3px 3px 0 0 var(--ink); }
     .chip i{ font-size:18px; }
   }
 
@@ -290,31 +294,13 @@
   .final__mail:hover{ text-decoration:underline; }
   .benjamin--final{ position:absolute; bottom:0; left:4%; height:320px; z-index:2; pointer-events:none; }
 
-  /* ════ MODAL (כניסת תלמידים) ════ */
-  .modal{ position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; padding:16px; }
-  .modal.open{ display:flex; }
-  /* scroll lock: fixed-body pattern freezes user AND programmatic scroll; JS keeps the visual offset */
-  body.modal-open{ position:fixed; left:0; right:0; overflow:hidden; }
-  /* no backdrop-filter: with the fixed-body scroll lock Chromium mis-paints the blurred backdrop (bright strip) */
-  .modal__overlay{ position:absolute; inset:0; background:rgba(15,23,42,.6); }
-  .modal__card{ position:relative; z-index:1; background:var(--paper); border:3px solid var(--ink); border-radius:20px;
-    box-shadow:10px 10px 0 0 var(--ink); padding:30px 28px 26px; max-width:380px; width:100%; text-align:center; }
-  .modal__img{ display:block; height:140px; width:auto; margin:0 auto 14px; }
-  .modal__title{ font-family:'Rubik'; font-weight:900; font-size:30px; color:var(--ink); margin:0 0 8px; line-height:1.1; }
-  .modal__sub{ font-size:17px; color:var(--gray-600); margin:0 0 22px; line-height:1.5; }
-  .modal__btn{ display:inline-flex; align-items:center; gap:9px; background:var(--anchor); color:#fff; border:3px solid var(--ink);
-    border-radius:999px; padding:13px 30px; font-family:'Rubik'; font-weight:800; font-size:17px; cursor:pointer;
-    box-shadow:0 5px 0 0 var(--ink); transition:transform .15s, box-shadow .15s; }
-  .modal__btn:hover{ transform:translateY(-2px); box-shadow:0 7px 0 0 var(--ink); }
-  .modal__btn:active{ transform:translateY(2px); box-shadow:0 3px 0 0 var(--ink); }
-
   /* ════ footer ════ */
   .foot{ background:var(--ink); color:rgba(255,255,255,.72); padding:40px 32px; }
   .foot__inner{ max-width:1140px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; }
   .foot__brand{ display:flex; align-items:center; gap:11px; color:#fff; font-family:'Rubik'; font-weight:900; font-size:19px; }
   .foot__brand .brand__logo{ box-shadow:none; width:38px; height:38px; border-color:#fff; }
   .foot a{ color:var(--green-mint); text-decoration:none; }
-  .foot__tag{ font-size:14px; }
+  .foot__tag{ font-size:15px; }
 
   /* ════ ANIMATIONS (gated) ════ */
   @media (prefers-reduced-motion: no-preference){
@@ -322,7 +308,7 @@
     .hero__glow, .final__glow{ animation:breathe 9s ease-in-out infinite alternate; }
     @keyframes pulse{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.6); opacity:.45; } }
     .hero__squiggle path{ stroke-dasharray:600; stroke-dashoffset:600; }
-    body.anim .hero__squiggle.draw path{ animation:draw 1.4s ease .3s forwards; }
+    body.anim .hero__squiggle.draw path{ animation:draw 1.4s ease .6s forwards; }
     @keyframes draw{ to{ stroke-dashoffset:0; } }
     @keyframes floaty{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-16px); } }
     .hero__deco{ animation:floaty var(--fdur,7s) ease-in-out infinite; }
@@ -332,16 +318,8 @@
     body.anim .reveal{ opacity:0; transform:translateY(28px); transition:opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1); }
     body.anim .reveal.in{ opacity:1; transform:none; }
     body.anim .stagger > *{ opacity:0; transform:translateY(24px); transition:opacity .55s ease, transform .55s cubic-bezier(.16,1,.3,1); }
-    body.anim .stagger.in > *{ opacity:1; transform:none; }
-    body.anim .stagger.in > *:nth-child(1){ transition-delay:.04s; }
-    body.anim .stagger.in > *:nth-child(2){ transition-delay:.10s; }
-    body.anim .stagger.in > *:nth-child(3){ transition-delay:.16s; }
-    body.anim .stagger.in > *:nth-child(4){ transition-delay:.22s; }
-    body.anim .stagger.in > *:nth-child(5){ transition-delay:.28s; }
-    body.anim .stagger.in > *:nth-child(6){ transition-delay:.34s; }
-    body.anim .stagger.in > *:nth-child(7){ transition-delay:.40s; }
-    body.anim .stagger.in > *:nth-child(8){ transition-delay:.46s; }
-    body.anim .stagger.in > *:nth-child(9){ transition-delay:.52s; }
+    /* each fit row and each track appears on its own when it reaches the screen */
+    body.anim .stagger > .in-self{ opacity:1; transform:none; }
   }
 
   /* ════ responsive ════ */
@@ -373,10 +351,8 @@
     .fit__row p{ font-size:18px; }
     .rung__card h3{ font-size:23px; }
     .rung__card p{ font-size:18px; }
-    .cell h3{ font-size:19px; }
-    .cell p{ font-size:16px; }
     .track h3{ font-size:22px; }
-    .track p{ font-size:17px; }
+    .track p{ font-size:18px; }
   }
   @media (max-width:520px){
     .rung{ grid-template-columns:60px 1fr; gap:16px; }
@@ -388,15 +364,322 @@
     .rung__card h3{ font-size:21px; }
     /* hide floating hero deco so it can't collide with the headline; snap stays in-flow */
     .hero__deco{ display:none; }
-    .hero__snap img{ height:260px; }
+    /* phones: the two buttons come right after the deck, Benjamin under them */
+    .hero__inner{ display:flex; flex-direction:column; }
+    .hero__deck{ margin-bottom:24px; }
+    .hero__row{ order:1; }
+    .hero__snap{ order:2; margin:28px auto 0; }
+    .hero__snap img{ height:180px; }
     /* per-spot Benjamin sizes so figures never push content */
     .benjamin--story{ height:270px; margin-bottom:-30px; }
-    .modal__img{ height:120px; }
+    .cell{ padding:10px 16px; }
+    .cell h3{ font-size:18px; }
+    /* the coral square in the final section stays clear of the email line */
+    .final__deco.d-sq{ bottom:-22px !important; right:-16px !important; }
   }
   @media (max-width:380px){
     .hero h1{ font-size:46px; }
     .hero__btn{ padding:16px 28px; font-size:18px; }
   }
+
+  /* ════ OUTCOMES — מה משיגים (promise card + three outcome cards + the two how cards) ════ */
+  .outc{ background-color:var(--canvas);
+    background-image:radial-gradient(circle at 4px 4px, rgba(15,23,42,.13) 2.2px, transparent 2.7px); background-size:20px 20px; }
+  .promise{ display:flex; align-items:center; gap:36px; background:var(--depth); color:#fff; border:3px solid var(--ink); border-radius:28px;
+    box-shadow:8px 8px 0 0 var(--ink); padding:36px 40px; }
+  .promise__txt{ flex:1 1 auto; min-width:0; }
+  .promise .promise__t{ display:inline-block; font-family:'Rubik'; font-weight:900; font-size:clamp(28px,3.6vw,40px); line-height:1.15; letter-spacing:-.8px;
+    background:var(--sunshine); color:var(--ink); border:3px solid var(--ink); border-radius:22px; padding:4px 20px; margin:0 0 18px; }
+  .promise .promise__b{ color:rgba(255,255,255,.88); font-size:20px; max-width:820px; margin:0; }
+  .outc__grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:26px; }
+  .oc{ position:relative; }
+  .oc__h{ font-family:'Rubik'; font-weight:900; font-size:23px; color:var(--ink); margin:0 0 8px; line-height:1.15; letter-spacing:-.3px; }
+  .oc__p{ margin:0; font-size:18px; line-height:1.55; color:var(--gray-700); }
+  .oc--out{ background:var(--paper); border:3px solid var(--ink); border-radius:20px; box-shadow:5px 5px 0 0 var(--ink); overflow:hidden; padding:34px 24px 26px; }
+  .oc--out::before{ content:""; position:absolute; top:0; left:0; right:0; height:10px; background:var(--acc); }
+  .oc__badge{ display:grid; place-items:center; width:48px; height:48px; border:3px solid var(--ink); border-radius:14px;
+    background:var(--acc); color:#fff; font-size:26px; box-shadow:3px 3px 0 0 var(--ink); margin-bottom:16px; }
+  .oc__step{ display:none; }
+  .oc--how{ background:var(--soft); border:3px solid var(--ink); border-radius:20px; box-shadow:5px 5px 0 0 var(--ink); padding:30px 28px; }
+  .oc--how::after{ content:""; position:absolute; inset:8px; border:2px dashed var(--ink); border-radius:14px; pointer-events:none; }
+  #oc-a{ --acc:var(--anchor); } #oc-dna{ --acc:var(--coral); } #oc-c{ --acc:var(--lavender); }
+  #how-5a{ --acc:var(--anchor); } #how-5b{ --acc:var(--sunshine); }
+  #how-5b .oc__badge{ color:var(--ink); }
+  .mk-how{ background:linear-gradient(180deg, transparent 58%, var(--sunshine) 58%); padding:0 4px; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+  .how{ margin-top:48px; }
+  /* desktop: 5a | 5b side by side, the fix diagram under both; phone: 5a, diagram, 5b */
+  .how-pair{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  #how-5a{ order:1; } #how-5b{ order:2; } .fixg{ order:3; grid-column:1 / -1; }
+  @media (max-width:880px){ .outc__grid{ grid-template-columns:1fr; } }
+  @media (max-width:760px){
+    .how-pair{ grid-template-columns:1fr; }
+    #how-5a{ order:1; } .fixg{ order:2; } #how-5b{ order:3; }
+    .promise{ flex-direction:column; align-items:stretch; gap:20px; }
+    .folder{ order:-1; align-self:center; }
+  }
+  @media (max-width:520px){ .promise{ padding:26px 22px; } .oc--how{ padding:26px 22px; } }
+
+  /* small vignettes in the cards (static final frame; they play once when the card is half in view) */
+  .vig{ display:block; width:120px; height:72px; margin:0 0 18px; }
+  .vig--dna{ width:200px; }
+  .vig svg{ display:block; overflow:visible; }
+  .vig--dna svg{ width:100%; height:auto; }
+  .va-note{ transform:translate(-60px,0); }
+  .vc-tool{ fill:var(--sunshine); }
+  .vm-dot.vm-d1{ fill:var(--ui-green); } .vm-dot.vm-d2{ fill:var(--sunshine); } .vm-dot.vm-d3{ fill:var(--lavender); }
+
+  /* the fix becomes a rule — diagram card (GSAP scrubs it; static = finished) */
+  .fixg{ display:block; background:var(--paper); border:3px solid var(--ink); border-radius:20px; box-shadow:5px 5px 0 0 var(--ink); padding:10px 14px; }
+  .fixg svg{ display:block; width:100%; height:auto; }
+  .fixg .fg-mob{ display:none; }
+  @media (max-width:760px){ .fixg .fg-desk{ display:none; } .fixg .fg-mob{ display:block; } }
+
+  /* folder beside the promise: the four nouns as tabs */
+  .folder{ position:relative; display:block; width:204px; height:140px; flex:none; }
+  .folder__back{ position:absolute; left:0; right:0; bottom:0; height:96px; background:var(--depth); border:3px solid var(--ink); border-radius:12px; }
+  .folder__back::before{ content:""; position:absolute; top:-16px; right:14px; width:62px; height:18px; background:var(--depth); border:3px solid var(--ink); border-bottom:0; border-radius:9px 9px 0 0; }
+  .folder__front{ position:absolute; left:0; right:0; bottom:0; height:62px; background:var(--anchor); border:3px solid var(--ink); border-radius:10px; box-shadow:6px 6px 0 0 var(--ink); z-index:2; }
+  .ftab{ position:absolute; bottom:22px; width:54px; height:92px; background:var(--c); border:2.5px solid var(--ink); border-radius:8px; z-index:1;
+    font-family:'Rubik'; font-weight:700; font-size:13px; line-height:1.15; color:var(--ink); text-align:center; padding:7px 2px 0;
+    transform-origin:50% 100%; transform:rotate(var(--fr)); cursor:pointer; }
+  .ftab--1{ --c:var(--sunshine); --fr:11deg; right:0; }
+  .ftab--2{ --c:var(--coral); --fr:4deg; right:50px; }
+  .ftab--3{ --c:var(--lavender); --fr:-3deg; right:100px; }
+  .ftab--4{ --c:var(--green-mint); --fr:-10deg; right:150px; }
+  @media (prefers-reduced-motion: reduce){ .ftab.lift{ transform:translateY(-12px) rotate(var(--fr)); } }
+
+  /* ════ STORY — short chunks, a pull-out line, a small Marko bar between the three parts ════ */
+  .story__part + .story__part{ margin-top:34px; }
+  .story__part + .story__part::before{ content:""; display:block; width:54px; height:10px; margin:0 0 34px; background:var(--sunshine);
+    border:2.5px solid var(--ink); border-radius:999px; box-shadow:2px 2px 0 0 var(--ink); }
+  .story__prose .story__pull{ font-family:'Rubik'; font-weight:700; font-size:24px; line-height:1.5; color:var(--ink);
+    border-right:6px solid var(--anchor); padding-right:18px; }
+  .story-mk{ background:linear-gradient(180deg, transparent 58%, var(--sunshine) 58%); padding:0 4px; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+  @media (max-width:880px){ .story__prose .story__pull{ font-size:21px; padding-right:14px; } }
+
+  /* ════ CANCEL CANCER strip — the Cancel Cancer page's colors (coral, green band, ink wave);
+     border, shadow and radius stay in the site's language ════ */
+  .ccs{ display:grid; grid-template-columns:clamp(200px,24%,260px) 1fr; margin-top:40px; background:var(--depth);
+    border:3px solid var(--ink); border-radius:20px; box-shadow:5px 5px 0 0 var(--ink); overflow:hidden; }
+  /* the coral panel: the dino alone */
+  .ccs__art{ position:relative; display:flex; align-items:flex-end; justify-content:center; min-height:220px; padding:30px 20px 14px 38px; background:var(--coral); }
+  .ccs__dino{ position:relative; z-index:2; width:min(100%,190px); height:auto; display:block; flex:none; transform-origin:50% 100%; }
+  .ccs__dot{ position:absolute; top:18px; right:20px; width:18px; height:18px; border-radius:50%; background:var(--sunshine); border:3px solid var(--ink); box-shadow:2px 2px 0 0 var(--ink); }
+  .ccs__sq{ position:absolute; top:26px; left:50px; width:20px; height:20px; border-radius:4px; background:var(--sky); border:3px solid var(--ink); box-shadow:2px 2px 0 0 var(--ink); transform:rotate(14deg); }
+  .ccs__wave{ position:absolute; display:block; pointer-events:none; z-index:3; }
+  .ccs__wave--v{ top:0; left:0; width:28px; height:100%; }
+  .ccs__wave--h{ display:none; }
+  .ccs__wave .w-fill{ fill:var(--depth); }
+  .ccs__wave .w-line{ fill:none; stroke:var(--ink); stroke-width:4; vector-effect:non-scaling-stroke; }
+  /* the green panel: the locked line, and the crab at its end side */
+  .ccs__body{ display:flex; align-items:center; gap:24px; padding:24px 26px 18px 30px; }
+  .ccs__t{ flex:1 1 auto; min-width:0; margin:0; font-size:20px; line-height:1.65; color:var(--canvas); }
+  .ccs__t a{ color:var(--sunshine); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+  .ccs__crab{ flex:none; align-self:flex-end; width:170px; }
+  .ccs .crab{ width:100%; height:auto; display:block; overflow:visible; transform-origin:50% 100%; }
+  /* the crab's moods, as on /cancel-cancer/ */
+  .crab .crab-mood { display: none; }
+  .crab.mood-sly .crab-mood-sly, .crab.mood-panic .crab-mood-panic { display: inline; }
+  @media (max-width:880px){ .ccs__t{ font-size:18px; } .ccs__crab{ width:140px; } }
+  @media (max-width:760px){
+    .ccs{ grid-template-columns:1fr; }
+    .ccs__art{ min-height:0; height:200px; padding:22px 18px 30px; }
+    .ccs__dino{ width:auto; height:150px; }
+    .ccs__sq{ left:auto; right:64px; top:22px; }
+    .ccs__wave--v{ display:none; }
+    .ccs__wave--h{ display:block; left:0; right:0; bottom:-1px; width:100%; height:24px; }
+    .ccs__body{ padding:18px 22px 16px; }
+  }
+  /* phones: the crab goes under the line, on its end side */
+  @media (max-width:520px){
+    .ccs__body{ flex-direction:column; align-items:stretch; gap:4px; }
+    .ccs__crab{ width:128px; }
+  }
+
+  /* ════ FLAGSHIP badge on the full course ════ */
+  .track__badge{ display:inline-block; vertical-align:middle; background:var(--sunshine); border:2px solid var(--ink); border-radius:999px;
+    font-family:'Rubik'; font-weight:800; font-size:15px; line-height:1.5; padding:3px 12px; color:var(--ink); margin-inline-start:6px; letter-spacing:0; }
+
+  /* ════ FLOATING CONTACT — a «דברו איתי» pill with the B logo, bottom-left ════ */
+  .fab{ position:fixed; z-index:150; left:calc(16px + env(safe-area-inset-left, 0px)); bottom:calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .fab[hidden]{ display:none; }
+  .fab__btn{ display:inline-flex; align-items:center; gap:9px; height:52px; padding:0 18px 0 7px; border-radius:999px; cursor:pointer;
+    background:var(--sunshine); color:var(--ink); border:3px solid var(--ink); box-shadow:0 5px 0 0 var(--ink);
+    font-family:'Rubik',system-ui,sans-serif; font-weight:800; font-size:17px; white-space:nowrap; }
+  /* the logo sits at the button's left end, like the action icons on the page's other buttons */
+  .fab__logo{ order:2; display:grid; place-items:center; flex:none; width:36px; height:36px; border-radius:50%; background:var(--canvas); color:var(--anchor); border:2.5px solid var(--ink); }
+  .fab__logo svg{ display:block; width:15px; height:19px; }
+  .fab__btn:hover{ transform:translateY(-2px); box-shadow:0 7px 0 0 var(--ink); }
+  .fab__btn:active{ transform:translateY(3px); box-shadow:0 2px 0 0 var(--ink); }
+  .fab__btn[aria-expanded="true"]{ background:var(--ink); color:var(--sunshine); }
+  .fab__btn[aria-expanded="true"] .fab__logo{ transform:rotate(-8deg) scale(1.05); }
+  .fab__btn:focus-visible{ outline:3px solid var(--ink); outline-offset:3px; border-radius:999px; }
+
+  /* ════ CONTACT ARC — one pop of WhatsApp / email / phone, shared by every «דברו איתי».
+     The script anchors .carc at the centre of the clicked button and sets each item's --x/--y. ════ */
+  /* parked at the page's horizontal centre until first opened: in an RTL page anything past the left edge would add a horizontal scroll */
+  .carc{ position:absolute; left:50%; top:0; width:0; height:0; z-index:160; }
+  .carc__item{ position:absolute; left:-24px; top:-24px; width:48px; height:48px; display:grid; place-items:center; border-radius:50%;
+    border:3px solid var(--ink); box-shadow:3px 3px 0 0 var(--ink); color:var(--ink); font-size:24px; text-decoration:none;
+    opacity:0; visibility:hidden; transform:translate(0,0) scale(.3); }
+  .carc__item--wa{ --i:0; background:var(--green-mint); }
+  .carc__item--mail{ --i:1; background:var(--coral); }
+  .carc__item--tel{ --i:2; background:var(--sky); }
+  .carc.is-open .carc__item{ opacity:1; visibility:visible; transform:translate(var(--x,0px), var(--y,0px)) scale(1); }
+  .carc__item:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; box-shadow:0 0 0 7px var(--sunshine); border-radius:50%; }
+  .carc__tip{ position:absolute; left:calc(100% + 10px); top:50%; height:30px; margin-top:-15px; display:flex; align-items:center; padding:0 12px;
+    background:var(--ink); color:#fff; border:2px solid var(--canvas); font-family:'Rubik'; font-weight:700; font-size:15px; border-radius:999px;
+    white-space:nowrap; pointer-events:none; opacity:0; }
+  .carc__item.tip-l .carc__tip{ left:auto; right:calc(100% + 10px); }
+  .carc__item.tip-t .carc__tip{ left:50%; top:auto; bottom:calc(100% + 8px); margin-top:0; transform:translateX(calc(-50% + var(--tx, 0px))); }
+  .carc__item.tip-b .carc__tip{ left:50%; top:calc(100% + 8px); margin-top:0; transform:translateX(calc(-50% + var(--tx, 0px))); }
+  .carc__item:hover .carc__tip, .carc__item:focus-visible .carc__tip{ opacity:1; }
+
+  /* ════ bug fixes (round 2026-11) ════ */
+  /* the footer slogan never breaks inside its English part */
+  .foot__tag .ltr{ white-space:nowrap; }
+  /* with no running belt engine (reduced motion, no JS) the belt is one complete, wrapping list */
+  .belt__marquee:not(.is-live){ -webkit-mask-image:none; mask-image:none; cursor:auto; }
+  .belt__marquee:not(.is-live) .belt__track{ flex-wrap:wrap; justify-content:center; width:auto; max-width:1140px; margin:0 auto; padding:0 18px; transform:none !important; }
+
+  /* ════ EFFECTS (all gated: with reduced motion nothing below runs) ════ */
+  @media (prefers-reduced-motion: no-preference){
+    /* marker sweep, right to left, when the words are half in view */
+    .manifesto p em{ position:relative; }
+    body.anim .mk{ background-repeat:no-repeat; background-position:right center; background-size:0% 100%; transition:background-size .6s ease .2s; }
+    body.anim .mk.mk-in{ background-size:100% 100%; }
+    /* the manifesto pill fills with ink the same way: an overlay copy is revealed right to left, so every letter stays readable */
+    body.anim .manifesto p em.mk{ background:transparent; color:var(--ink); display:inline-block; }
+    body.anim .manifesto p em.mk::after{ content:attr(data-t); position:absolute; inset:0; padding:0 12px; border-radius:9px; background:var(--ink); color:var(--sunshine);
+      white-space:nowrap; clip-path:inset(0 0 0 100%); transition:clip-path .6s ease .2s; }
+    body.anim .manifesto p em.mk.mk-in::after{ clip-path:inset(0 0 0 0); }
+
+    /* stamps land: hero on load, manifesto pill and final stamp when they come into view */
+    body.anim .hero h1 .stamp{ animation:stampHero .45s cubic-bezier(.34,1.56,.64,1) .15s backwards; }
+    @keyframes stampHero{ from{ transform:translateY(-18px) rotate(8deg) scale(1.3); box-shadow:none; } to{ transform:rotate(-2.5deg); box-shadow:9px 9px 0 0 rgba(0,0,0,.45); } }
+    body.anim .manifesto p em.slam{ display:inline-block; }
+    body.anim .slam--mem:not(.slam-go){ transform:translate(8px,-16px) scale(1.42) rotate(-9deg); }
+    body.anim .slam--mem.slam-go{ animation:slamMem .36s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes slamMem{ from{ transform:translate(8px,-16px) scale(1.42) rotate(-9deg); } to{ transform:none; } }
+    body.anim .slam--fin:not(.slam-go){ transform:translate(8px,-16px) scale(1.42) rotate(-9deg); box-shadow:16px 16px 0 0 rgba(0,0,0,.45); }
+    body.anim .slam--fin.slam-go{ animation:slamFin .36s cubic-bezier(.34,1.56,.64,1) both; }
+    @keyframes slamFin{ 0%{ transform:translate(8px,-16px) scale(1.42) rotate(-9deg); box-shadow:16px 16px 0 0 rgba(0,0,0,.45); }
+      66%{ box-shadow:16px 16px 0 0 rgba(0,0,0,.45); } 67%{ box-shadow:6px 6px 0 0 rgba(0,0,0,.45); }
+      100%{ transform:rotate(-1.5deg); box-shadow:6px 6px 0 0 rgba(0,0,0,.45); } }
+
+    /* ladder: a green line grows down with the scroll; each rung lights up when the line reaches it */
+    body.anim .ladder::after{ content:""; position:absolute; top:10px; bottom:10px; right:35px; width:5px; border-radius:3px; background:var(--anchor);
+      transform-origin:top center; transform:scaleY(var(--lp,0)); z-index:0; }
+    body.anim .ladder .rung:not(.lit) .rung__node{ background:var(--paper); }
+    body.anim .ladder .rung:not(.lit) .rung__node .ti{ color:var(--ink); }
+    body.anim .ladder .rung__node{ transition:background-color .25s ease; }
+    body.anim .ladder .rung__card{ transition:opacity .4s ease, transform .18s, box-shadow .18s; }
+    body.anim .ladder .rung:not(.lit) .rung__card{ opacity:0; }
+    body.anim .ladder .rung.lit .rung__node{ animation:rungPop .35s cubic-bezier(.34,1.56,.64,1) both; }
+    body.anim .ladder .rung.lit .rung__num{ background:var(--sunshine); box-shadow:3px 3px 0 0 var(--ink); animation:numPop .22s cubic-bezier(.34,1.56,.64,1) .1s both; }
+    @keyframes rungPop{ from{ transform:scale(.8); } to{ transform:scale(1); } }
+    @keyframes numPop{ 0%{ transform:scale(1); } 50%{ transform:scale(1.22); } 100%{ transform:scale(1); } }
+
+    /* vignettes: start frames, held until the card is half in view (.play) */
+    body.anim .oc:not(.play) .va-note{ transform:none; }
+    body.anim .oc.play .va-note{ animation:vNote .7s cubic-bezier(.3,.7,.4,1) both; }
+    @keyframes vNote{ 0%{ transform:translate(0,0); } 45%{ transform:translate(-30px,-30px); } 82%{ transform:translate(-60px,2px); } 100%{ transform:translate(-60px,0); } }
+    .vc-tool{ transform-box:fill-box; transform-origin:center; }
+    body.anim .oc:not(.play) .vc-tool{ fill:var(--lavender); }
+    body.anim .oc.play .vc-tool{ animation:vFlip 1.05s linear both; }
+    @keyframes vFlip{
+      0%{ transform:scaleX(1); fill:#A78BFA; } 16.6%{ transform:scaleX(0); fill:#A78BFA; } 16.7%{ transform:scaleX(0); fill:#FCD34D; }
+      33.3%{ transform:scaleX(1); fill:#FCD34D; } 49.9%{ transform:scaleX(0); fill:#FCD34D; } 50%{ transform:scaleX(0); fill:#A78BFA; }
+      66.6%{ transform:scaleX(1); fill:#A78BFA; } 83.2%{ transform:scaleX(0); fill:#A78BFA; } 83.3%{ transform:scaleX(0); fill:#FCD34D; }
+      100%{ transform:scaleX(1); fill:#FCD34D; } }
+    .vd-stripe{ transform-box:fill-box; transform-origin:right center; }
+    .vd-dot{ transform-box:fill-box; transform-origin:center; }
+    body.anim .oc:not(.play) .vd-stripe{ transform:scaleX(0); }
+    body.anim .oc:not(.play) .vd-dot{ transform:scale(0); }
+    body.anim .oc.play .vd-stripe{ animation:vStripe .25s ease-out both; animation-delay:calc(var(--k) * .4s); }
+    body.anim .oc.play .vd-dot{ animation:vDot .25s cubic-bezier(.34,1.56,.64,1) both; animation-delay:calc(var(--k) * .4s + .1s); }
+    @keyframes vStripe{ from{ transform:scaleX(0); } to{ transform:scaleX(1); } }
+    @keyframes vDot{ from{ transform:scale(0); } to{ transform:scale(1); } }
+    body.anim .oc:not(.play) .vm-draw{ stroke-dashoffset:100; }
+    body.anim .oc.play .vm-draw{ animation:vDraw .9s linear both; }
+    @keyframes vDraw{ from{ stroke-dashoffset:100; } to{ stroke-dashoffset:0; } }
+    body.anim .oc:not(.play) .vm-dot{ fill:#fff; }
+    body.anim .oc.play .vm-dot{ transition:fill .15s ease; }
+    body.anim .oc.play .vm-d2{ transition-delay:.45s; }
+    body.anim .oc.play .vm-d3{ transition-delay:.88s; }
+    .vm-pin{ transform-box:fill-box; transform-origin:center bottom; }
+    body.anim .oc:not(.play) .vm-pin{ opacity:0; transform:translateY(-14px); }
+    body.anim .oc.play .vm-pin{ animation:vPin .3s cubic-bezier(.34,1.56,.64,1) .9s both; }
+    @keyframes vPin{ from{ opacity:0; transform:translateY(-14px); } to{ opacity:1; transform:none; } }
+
+    /* folder: the tabs spring up when it comes into view; hover/tap lifts one */
+    body.anim .folder:not(.open) .ftab{ transform:translateY(46px) rotate(0deg); }
+    body.anim .folder .ftab{ transition:transform .52s cubic-bezier(.34,1.56,.64,1); }
+    body.anim .folder.open .ftab--2{ transition-delay:.06s; }
+    body.anim .folder.open .ftab--3{ transition-delay:.12s; }
+    body.anim .folder.open .ftab--4{ transition-delay:.18s; }
+    body.anim .folder.open .ftab:hover, body.anim .folder.open .ftab.lift{ transform:translateY(-12px) rotate(var(--fr)); transition:transform .18s ease; transition-delay:0s; }
+
+    /* chips land one by one like stickers, row by row */
+    body.anim .show-grid .cell:not(.stk-in){ opacity:0; transform:scale(1.25) rotate(var(--r,5deg)); box-shadow:none; }
+    body.anim .show-grid .cell.stk-in{ animation:stick .25s cubic-bezier(.2,.9,.3,1.25) both; animation-delay:calc(var(--i,0) * 45ms); }
+    @keyframes stick{ 0%{ opacity:0; transform:scale(1.25) rotate(var(--r,5deg)); box-shadow:0 0 0 0 var(--ink); } 35%{ opacity:1; }
+      100%{ opacity:1; transform:none; box-shadow:3px 3px 0 0 var(--ink); } }
+
+    /* Benjamin arrives: rises by the tracks, slides up in the final section */
+    body.anim .benjamin--tracks:not(.benj-in){ opacity:0; transform:translateY(36px) rotate(4deg); }
+    body.anim .benjamin--tracks.benj-in{ animation:benjRise .5s cubic-bezier(.34,1.56,.64,1) .15s both; }
+    @keyframes benjRise{ 0%{ opacity:0; transform:translateY(36px) rotate(4deg); } 40%{ opacity:1; } 100%{ opacity:1; transform:none; } }
+    body.anim .benjamin--final:not(.benj-in){ transform:translateY(100%); }
+    body.anim .benjamin--final.benj-in{ animation:benjUp .6s cubic-bezier(.16,1,.3,1) both; }
+    @keyframes benjUp{ from{ transform:translateY(100%); } to{ transform:none; } }
+
+    /* click sparks on the yellow buttons and stamps (spans live on body) */
+    .spark{ position:fixed; width:10px; height:3px; margin:-1.5px 0 0 -5px; border-radius:2px; pointer-events:none; z-index:999;
+      transform:rotate(var(--a)) translateX(6px); animation:spark .4s cubic-bezier(.16,1,.3,1) forwards; }
+    @keyframes spark{ to{ transform:rotate(var(--a)) translateX(34px); opacity:0; } }
+
+    /* stacking outcome cards (only on screens taller than 620px) */
+    @media (min-height:621px){
+      body.anim .outc__grid{ display:block; padding-bottom:180px; }
+      body.anim .outc__grid > .oc{ position:sticky; margin-bottom:28px; transform:scale(var(--cs,1)); transform-origin:50% 0;
+        background-image:linear-gradient(var(--strip),var(--strip)); background-size:100% 36px; background-repeat:no-repeat; padding-top:52px; }
+      body.anim .outc__grid > .oc:nth-child(1){ top:76px; }
+      body.anim .outc__grid > .oc:nth-child(2){ top:112px; }
+      body.anim .outc__grid > .oc:nth-child(3){ top:148px; }
+      body.anim .oc__step{ display:inline-block; position:absolute; top:6px; right:20px; font-family:'Rubik'; font-weight:900; font-size:15px;
+        color:var(--ink); background:var(--paper); border:2px solid var(--ink); border-radius:999px; padding:0 10px; line-height:22px; direction:ltr; }
+      body.anim #oc-a{ --strip:var(--green-soft); } body.anim #oc-dna{ --strip:#FFE4E8; } body.anim #oc-c{ --strip:#EDE7FF; }
+    }
+    @media (min-height:621px) and (max-width:760px){
+      body.anim .outc__grid > .oc:nth-child(1){ top:56px; }
+      body.anim .outc__grid > .oc:nth-child(2){ top:88px; }
+      body.anim .outc__grid > .oc:nth-child(3){ top:120px; }
+    }
+
+    /* Cancel Cancer strip: the dino pops up and waves, the crab panics for a moment, then both idle gently */
+    body.anim .ccs:not(.is-in) .ccs__dino{ opacity:0; transform:translateY(46px); }
+    body.anim .ccs.is-in .ccs__dino{ animation:dinoIn .5s cubic-bezier(.34,1.56,.64,1) both, dinoWave .9s ease-in-out .5s 2, dinoBob 3.6s ease-in-out 2.4s infinite; }
+    body.anim .ccs.is-in .crab{ animation:crabScuttle .36s ease-in-out .15s 4, crabSway 4.2s ease-in-out 1.8s infinite; }
+    body.anim .ccs:not(.is-vis) .ccs__dino, body.anim .ccs:not(.is-vis) .crab{ animation-play-state:paused; }
+    @keyframes dinoIn{ from{ opacity:0; transform:translateY(46px); } to{ opacity:1; transform:none; } }
+    @keyframes dinoWave{ 0%,100%{ transform:rotate(0deg); } 25%{ transform:rotate(-6deg); } 75%{ transform:rotate(5deg); } }
+    @keyframes dinoBob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+    @keyframes crabScuttle{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(-10px); } }
+    @keyframes crabSway{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(-2.5deg); } }
+
+    /* floating pill slides in; the contact arc pops with a short, staggered bounce */
+    .fab{ transition:opacity .25s ease, transform .25s ease; }
+    .fab:not(.in){ opacity:0; transform:translateY(20px); }
+    .fab__btn{ transition:transform .15s, box-shadow .15s, background-color .15s, color .15s; }
+    .fab__logo{ transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
+    .carc__item{ transition:transform .2s ease, opacity .15s ease, visibility 0s linear .2s; }
+    .carc.is-open .carc__item{ transition:transform .38s cubic-bezier(.34,1.56,.64,1), opacity .16s ease, visibility 0s;
+      transition-delay:calc(var(--i) * 55ms), calc(var(--i) * 55ms), 0s; }
+    .carc.no-tr .carc__item{ transition:none; }
+    .carc__tip{ transition:opacity .15s ease; }
+  }
+  @media (prefers-reduced-motion: no-preference) and (max-width:520px){ body.anim .ladder::after{ right:28px; } }
 </style>
 </head>
 <body>
@@ -437,9 +720,9 @@
     <p class="hero__hline">הקורס שבונה סביבכם <span class="u">שיטת עבודה</span> עם AI.</p>
     <p class="hero__deck">אתם כבר עובדים עם AI. זה לא עוד כלי שצריך ללמוד, זו שיטת עבודה שנבנית סביבכם: <b>בניית סוכנים, ניתוח מידע, ניהול זיכרון וידע והרכבת תהליכים להכנת תוצרים מקצועיים</b>, בליווי אישי לאורך כל הדרך.</p>
     <!-- Benjamin snapping fingers (decorative) with a twinkling sparkle by the fingertips.
-         Desktop: absolute at the hero's left. Mobile: in-flow, centered between the deck and the buttons. -->
+         Desktop: absolute at the hero's left. Tablet: in-flow between the deck and the buttons; phones (≤520): under the buttons. -->
     <div class="hero__snap" aria-hidden="true">
-      <img src="assets/benjamin/snap.png" alt="" loading="lazy" width="366" height="960">
+      <img src="assets/benjamin/snap.png" alt="" loading="eager" fetchpriority="high" width="366" height="960">
       <span class="snap-star" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.6 5.2 1.4 7.6 2.9 9.1S18.8 11.4 24 12c-5.2.6-7.6 1.4-9.1 2.9S12.6 18.8 12 24c-.6-5.2-1.4-7.6-2.9-9.1S5.2 12.6 0 12c5.2-.6 7.6-1.4 9.1-2.9S11.4 5.2 12 0Z"/></svg>
       </span>
@@ -455,7 +738,7 @@
 <div class="manifesto">
   <div class="manifesto__inner">
     <i class="ti ti-quote" aria-hidden="true"></i>
-    <p>לא עוד כלי שצריך ללמוד. <em>שיטת עבודה</em> שנבנית סביבכם.</p>
+    <p>לא עוד כלי שצריך ללמוד. <em class="slam slam--mem">שיטת עבודה</em> שנבנית סביבכם.</p>
   </div>
 </div>
 
@@ -468,16 +751,64 @@
     </div>
     <div class="story__grid">
       <div class="story__prose reveal">
-        <p>כל הסיפור הזה התחיל כי הייתי צריך משהו שיעבוד בשבילי. עבדתי הרבה זמן, וכל פעם שניסיתי לחפש תשובה לאיך לעשות דבר מסוים עם AI, פשוט לא מצאתי. אז ישבתי, פיתחתי, ניסיתי, ובדרך גיליתי משהו פשוט: מה שחיפשתי כל הזמן היה AI שסוף סוף מתאים לי. AI שמתאים זה AI שנבנה סביב מי שמשתמש בו.</p>
-        <p>הקורס הזה הוא כל מה שגיליתי בדרך. נתתי לכל דבר את השם הנכון, סידרתי הכל, ועכשיו אני מעביר את זה הלאה. שגם לכם יהיה AI שסוף סוף מתאים.</p>
+        <div class="story__part">
+          <p>כל הסיפור הזה התחיל <span class="nw">ב-TailorPlayed</span>, הסטודיו שלי שבונה משחקי קופסה מאפס מתוך סיפור אישי של לקוח. רציתי לבנות את המשחקים בעזרת AI, כך שהסיפור יהפוך למכניקה של המשחק, ולא מצאתי מי שיסביר לי איך לעשות את זה. ישבתי לילות שלמים מול המסך, ניסיתי, טעיתי, ותוך כדי הקמת הסטודיו פיתחתי שיטות עבודה משלי.</p>
+          <p>כדי שהסטודיו יעבוד הייתי חייב לפתור משימות שכל עסק פוגש: לסדר מידע במקום מרוכז, להפוך תשובות משאלון לתוכן מותאם אישית, לכתוב טקסט שנשמע אנושי ולא כמו AI, להקים אתר, לשמור על מראה אחיד בתמונות ובסרטונים, ולבדוק כל תוצר לפני שהוא יוצא.</p>
+        </div>
+        <div class="story__part">
+          <p class="story__pull">בדרך הבנתי שמה שחיפשתי היה AI שסוף סוף מתאים לי. <span class="story-mk">AI שמתאים זה AI שנבנה סביב מי שמשתמש בו.</span></p>
+          <p>את השיטות שבניתי בלילות בסטודיו הבאתי לעבודה, שם לכל קבוצה היו משימות אחרות ואת ההדרכות בניתי בהתאמה אישית. בהמשך הדרכתי בעוד ארגונים, וגיליתי שהפתרונות שאנשים צריכים בעבודה היומיומית הם לרוב הרבה יותר פשוטים ממה שהם דמיינו.</p>
+        </div>
+        <div class="story__part">
+          <p>לאט לאט התחלתי ללמד גם באופן עצמאי, שיעור פה והרצאה שם. נתתי לכל דבר את השם הנכון וסידרתי את הכל לשיטה ברורה, וככה נולד הקורס.</p>
+          <p>המטרה שלי היא שכל מי שלומד איתי יזהה בעצמו את המשימה הבאה בעבודה שלו, וידע לבנות לה פתרון גם כשאני כבר לא לידו.</p>
+        </div>
       </div>
       <div class="story__aside reveal">
         <div class="bio">
           <h3 class="bio__name">בן עקיבא</h3>
           <p class="bio__role">מנחה הקורס</p>
-          <p class="bio__body">בן עקיבא, מייסד TailorPlayed (סטודיו למשחקי קופסה מותאמים אישית מבוססי AI). בעל ניסיון מעשי עשיר בתפקיד AI Champion ארגוני, כולל הקמת קהילת מובילי טכנולוגיה פנים-ארגונית והובלת תהליכי הטמעה רוחביים. מרצה בפיתוח תוכנה בשיטת Spec-Driven Development ומייעץ לחברות, ארגונים והנהלה בכירה על שילוב מעשי של כלי AI בעבודה.</p>
+          <p class="bio__body">בן עקיבא הוא מייסד TailorPlayed. <span class="nw">ב-PassportCard</span> הוא יזם את תפקיד <span class="nw">ה-AI Champion</span>, בנה הדרכות מותאמות אישית לצוותים טכניים, לצוותי הדרכה ולעובדים ללא רקע טכני, וליווה מנהלים ואת מנכ"ל הארגון. בהמשך הוביל קורסים וסדנאות AI לארגונים ולהנהלות בישראל ובחו"ל, בעברית ובאנגלית. מאחוריו ניסיון כמדריך, סטודנט מלווה ורכז בתוכניות נוער, משלחות ומחנות קיץ בארץ ובחו"ל, שם כתב והעביר תכנים חינוכיים. הוא בוגר הטכניון בהנדסת תחבורה ודרכים ועבד כמפתח תוכנה לפני שעבר לתחום <span class="nw">ה-AI</span>.</p>
         </div>
         <img class="benjamin benjamin--story" src="assets/benjamin/presenting.png" alt="" aria-hidden="true" loading="lazy" width="269" height="478">
+      </div>
+    </div>
+    <!-- Cancel Cancer: a place of its own, in the Cancel Cancer page's colors (coral + green band, ink wave).
+         The dino stands alone in the coral panel; the crab (inline, with its moods) sits in the green panel at the
+         end of the line. Both are copied from /cancel-cancer/ and are decorative. -->
+    <div class="ccs">
+      <div class="ccs__art" aria-hidden="true">
+        <span class="ccs__dot"></span><span class="ccs__sq"></span>
+        <img class="ccs__dino" src="assets/cancel-cancer/dino-wave.svg" alt="" width="2048" height="1955" loading="lazy" decoding="async">
+        <svg class="ccs__wave ccs__wave--v" viewBox="0 0 48 600" preserveAspectRatio="none" focusable="false"><path class="w-fill" d="M24 0 Q 0 50 24 100 T 24 200 T 24 300 T 24 400 T 24 500 T 24 600 L0 600 L0 0 Z"/><path class="w-line" d="M24 0 Q 0 50 24 100 T 24 200 T 24 300 T 24 400 T 24 500 T 24 600"/></svg>
+        <svg class="ccs__wave ccs__wave--h" viewBox="0 0 600 48" preserveAspectRatio="none" focusable="false"><path class="w-fill" d="M0 24 Q 50 0 100 24 T 200 24 T 300 24 T 400 24 T 500 24 T 600 24 L600 48 L0 48 Z"/><path class="w-line" d="M0 24 Q 50 0 100 24 T 200 24 T 300 24 T 400 24 T 500 24 T 600 24"/></svg>
+      </div>
+      <div class="ccs__body">
+        <p class="ccs__t">אחרי שלאמא שלו גילו סרטן, בן עקיבא בנה עם Claude מערכת לסידור מסמכים ומשימות, מתוך אותה שיטת עבודה שנלמדת בקורס. <span class="nw">ב-<a href="/cancel-cancer/" lang="en">Cancel Cancer</a></span> תמצאו את הסיפור, הסרטונים וערכה חינמית להתקנה.</p>
+        <div class="ccs__crab" aria-hidden="true"><svg class="crab mood-sly" viewBox="-292 -332 584 380" aria-hidden="true" focusable="false">
+
+<g id="crab-art">
+<ellipse class="crab-shadow" cx="0" cy="4" rx="200" ry="16" fill="#0F172A" opacity="0.12"/>
+<g id="crab-legs"><g class="crab-leg" data-side="-1" data-i="0" data-px="-118" data-py="-78"><path d="M -118 -78 Q -190 -114 -206 -4" stroke="#0F172A" stroke-width="25" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M -118 -78 Q -190 -114 -206 -4" stroke="#FB7185" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g><g class="crab-leg" data-side="-1" data-i="1" data-px="-102" data-py="-60"><path d="M -102 -60 Q -170 -92.287 -176 -17.811" stroke="#0F172A" stroke-width="25" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M -102 -60 Q -170 -92.287 -176 -17.811" stroke="#FB7185" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g><g class="crab-leg" data-side="-1" data-i="2" data-px="-86" data-py="-42"><path d="M -86 -42 Q -150 -54 -146 -4" stroke="#0F172A" stroke-width="25" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M -86 -42 Q -150 -54 -146 -4" stroke="#FB7185" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g><g class="crab-leg" data-side="1" data-i="0" data-px="118" data-py="-78"><path d="M 118 -78 Q 190 -114 206 -4" stroke="#0F172A" stroke-width="25" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 118 -78 Q 190 -114 206 -4" stroke="#FB7185" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g><g class="crab-leg" data-side="1" data-i="1" data-px="102" data-py="-60"><path d="M 102 -60 Q 170 -84 176 -4" stroke="#0F172A" stroke-width="25" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 102 -60 Q 170 -84 176 -4" stroke="#FB7185" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g><g class="crab-leg" data-side="1" data-i="2" data-px="86" data-py="-42"><path d="M 86 -42 Q 150 -62.367 146 -17.945" stroke="#0F172A" stroke-width="25" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 86 -42 Q 150 -62.367 146 -17.945" stroke="#FB7185" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></g>
+<g id="crab-arms"><path d="M -110 -128 Q -190 -150 -212 -236" stroke="#0F172A" stroke-width="30" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M -110 -128 Q -190 -150 -212 -236" stroke="#FB7185" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 110 -128 Q 190 -150 212 -236" stroke="#0F172A" stroke-width="30" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 110 -128 Q 190 -150 212 -236" stroke="#FB7185" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="crab-mood crab-mood-sly"><path d="M -44 -196 Q -48 -250 -54 -262" stroke="#0F172A" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M -44 -196 Q -48 -250 -54 -262" stroke="#FB7185" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 44 -196 Q 48 -250 54 -262" stroke="#0F172A" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 44 -196 Q 48 -250 54 -262" stroke="#FB7185" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g class="crab-mood crab-mood-panic"><path d="M -44 -196 Q -48 -250 -54 -280" stroke="#0F172A" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M -44 -196 Q -48 -250 -54 -280" stroke="#FB7185" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 44 -196 Q 48 -250 54 -280" stroke="#0F172A" stroke-width="22" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 44 -196 Q 48 -250 54 -280" stroke="#FB7185" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="crab-body">
+<path d="M -142 -52 C -152 -132 -94 -204 0 -204 C 94 -204 152 -132 142 -52 Q 138 -30 112 -30 L -112 -30 Q -138 -30 -142 -52 Z" fill="#FB7185" stroke="#0F172A" stroke-width="5" stroke-linejoin="round"/>
+<path d="M -92 -160 Q -62 -188 -18 -190" stroke="#FFFFFF" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.5"/>
+<circle cx="70" cy="-150" r="10" fill="#EC4899" opacity="0.35"/>
+<circle cx="98" cy="-118" r="6.5" fill="#EC4899" opacity="0.35"/>
+<circle cx="-104" cy="-84" r="7.5" fill="#EC4899" opacity="0.35"/>
+<ellipse cx="-70" cy="-112" rx="16" ry="10" fill="#EC4899" opacity="0.45"/>
+<ellipse cx="70" cy="-112" rx="16" ry="10" fill="#EC4899" opacity="0.45"/>
+</g>
+<g class="crab-mood crab-mood-sly"><path d="M -26 -104 Q -2 -84 28 -112" stroke="#0F172A" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+<g class="crab-mood crab-mood-panic"><ellipse cx="0" cy="-92" rx="17" ry="24" fill="#0F172A"/><ellipse cx="0" cy="-80" rx="9" ry="7" fill="#EC4899"/></g>
+<g id="crab-claws"><g class="crab-claw" data-side="-1" data-dir="-118" data-r="54" transform="translate(-212 -236)"><path class="crab-claw-shape" d="M -5.07 -9.536 L 0 -54 A 54 54 0 1 1 -44.768 -30.196 Z" fill="#FB7185" stroke="#0F172A" stroke-width="5" stroke-linejoin="round"/><path d="M -22.68 10.8 Q -5.4 28.08 18.36 19.44" stroke="#0F172A" stroke-width="3.2" fill="none" stroke-linecap="round" opacity="0.55" transform="rotate(-28)"/></g><g class="crab-claw" data-side="1" data-dir="-62" data-r="54" transform="translate(212 -236)"><path class="crab-claw-shape" d="M 5.07 -9.536 L 44.768 -30.196 A 54 54 0 1 1 0 -54 Z" fill="#FB7185" stroke="#0F172A" stroke-width="5" stroke-linejoin="round"/><path d="M -22.68 10.8 Q -5.4 28.08 18.36 19.44" stroke="#0F172A" stroke-width="3.2" fill="none" stroke-linecap="round" opacity="0.55" transform="rotate(28)"/></g></g>
+<g class="crab-mood crab-mood-sly"><g class="crab-eye" data-r="30" transform="translate(-54 -262)"><circle r="30" fill="#FFFFFF" stroke="#0F172A" stroke-width="4.5"/><g class="crab-pupil"><ellipse cx="0" cy="0" rx="12" ry="13.44" fill="#0F172A"/><circle cx="4.32" cy="-5.04" r="4.32" fill="#FFFFFF"/></g><clipPath id="crab-lid-sly-l"><circle r="30"/></clipPath><rect x="-32" y="-32" width="64" height="26.88" fill="#FB7185" clip-path="url(#crab-lid-sly-l)"/><path d="M -29.4 -4.8 L 29.4 -1.2" stroke="#0F172A" stroke-width="4.5" stroke-linecap="round" clip-path="url(#crab-lid-sly-l)"/><circle r="30" fill="none" stroke="#0F172A" stroke-width="4.5"/></g><g class="crab-eye" data-r="30" transform="translate(54 -262)"><circle r="30" fill="#FFFFFF" stroke="#0F172A" stroke-width="4.5"/><g class="crab-pupil"><ellipse cx="0" cy="0" rx="12" ry="13.44" fill="#0F172A"/><circle cx="4.32" cy="-5.04" r="4.32" fill="#FFFFFF"/></g><clipPath id="crab-lid-sly-r"><circle r="30"/></clipPath><rect x="-32" y="-32" width="64" height="26.88" fill="#FB7185" clip-path="url(#crab-lid-sly-r)"/><path d="M -29.4 -4.8 L 29.4 -8.4" stroke="#0F172A" stroke-width="4.5" stroke-linecap="round" clip-path="url(#crab-lid-sly-r)"/><circle r="30" fill="none" stroke="#0F172A" stroke-width="4.5"/></g></g>
+<g class="crab-mood crab-mood-panic"><g class="crab-eye" data-r="35.4" transform="translate(-54 -280)"><circle r="35.4" fill="#FFFFFF" stroke="#0F172A" stroke-width="4.5"/><g class="crab-pupil"><ellipse cx="0" cy="0" rx="6.5" ry="7.28" fill="#0F172A"/><circle cx="2.34" cy="-2.73" r="2.34" fill="#FFFFFF"/></g></g><g class="crab-eye" data-r="35.4" transform="translate(54 -280)"><circle r="35.4" fill="#FFFFFF" stroke="#0F172A" stroke-width="4.5"/><g class="crab-pupil"><ellipse cx="0" cy="0" rx="6.5" ry="7.28" fill="#0F172A"/><circle cx="2.34" cy="-2.73" r="2.34" fill="#FFFFFF"/></g></g></g>
+</g>
+</svg></div>
       </div>
     </div>
   </div>
@@ -491,10 +822,139 @@
       <h2 class="sec__title">מתאים לכם אם</h2>
     </div>
     <div class="fit__list stagger">
-      <div class="fit__row"><span class="fit__check"><i class="ti ti-check" aria-hidden="true"></i></span><p>אתם כבר עובדים עם AI ביום-יום אבל מרגישים שאתם לא מוציאים מזה את כל מה שאפשר.</p></div>
+      <div class="fit__row"><span class="fit__check"><i class="ti ti-check" aria-hidden="true"></i></span><p>אתם כבר עובדים עם AI <span class="nw">ביום-יום</span> אבל מרגישים שאתם לא מוציאים מזה את כל מה שאפשר.</p></div>
       <div class="fit__row"><span class="fit__check"><i class="ti ti-check" aria-hidden="true"></i></span><p>אתם יודעים שאפשר להגיע לתוצאות גבוהות יותר, אבל אין לכם זמן או דרך ללמוד את זה לבד.</p></div>
       <div class="fit__row"><span class="fit__check"><i class="ti ti-check" aria-hidden="true"></i></span><p>אתם רוצים לעצב שיטת עבודה עקבית במקום לקוות שהתוצר של ה-AI ייצא טוב במקרה.</p></div>
       <div class="fit__row"><span class="fit__check"><i class="ti ti-check" aria-hidden="true"></i></span><p>אתם מובילים צוות וזקוקים למסגרת עבודה מוגדרת וברורה שתעבוד היטב גם עבור אחרים.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ OUTCOMES — מה משיגים (promise + three outcome cards + how it works day to day) ════ -->
+<section class="sec outc">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="sec__kick"><i class="ti ti-target-arrow" aria-hidden="true"></i> מה משיגים</span>
+    </div>
+    <div class="promise">
+      <div class="promise__txt reveal">
+        <h2 class="sec__title promise__t">הראש פנוי להחלטה הבאה.</h2>
+        <p class="sec__lead promise__b">אתם בונים סביבת עבודה משלכם שבה יש מקום לידע שלכם, להחלטות שכבר קיבלתם, לכללי העבודה ולסוכנים. כשאתם פותחים שיחה חדשה, אתם מביאים אליה משם את מה שצריך כדי להמשיך.</p>
+      </div>
+      <!-- the four nouns of the promise as tabs in a folder (decorative; tabs lift on hover/tap) -->
+      <div class="folder" aria-hidden="true">
+        <span class="folder__back"></span>
+        <span class="ftab ftab--1">ידע</span>
+        <span class="ftab ftab--2">החלטות</span>
+        <span class="ftab ftab--3">כללי עבודה</span>
+        <span class="ftab ftab--4">סוכנים</span>
+        <span class="folder__front"></span>
+      </div>
+    </div>
+    <div class="outc__grid">
+      <article class="oc oc--out" id="oc-a">
+        <span class="oc__step" aria-hidden="true">01</span>
+        <span class="oc__badge" aria-hidden="true"><i class="ti ti-arrows-right-left"></i></span>
+        <!-- vignette: a note moves from one tool window to the other -->
+        <div class="vig vig--a" aria-hidden="true">
+          <svg viewBox="0 0 120 72" width="120" height="72">
+            <rect x="8" y="10" width="44" height="56" rx="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="3"/>
+            <line x1="8" y1="21" x2="52" y2="21" stroke="#0F172A" stroke-width="3"/>
+            <rect x="68" y="10" width="44" height="56" rx="6" fill="#FFFFFF" stroke="#0F172A" stroke-width="3"/>
+            <line x1="68" y1="21" x2="112" y2="21" stroke="#0F172A" stroke-width="3"/>
+            <g class="va-note"><rect x="82" y="36" width="16" height="12" rx="2" fill="#FCD34D" stroke="#0F172A" stroke-width="2.5"/></g>
+          </svg>
+        </div>
+        <div class="oc__body"><h3 class="oc__h">ההחלטות שלכם עוברות עם העבודה.</h3><p class="oc__p">כשאתם ממשיכים את אותה משימה בכלי אחר, אתם מעבירים לשיחה החדשה את החומרים שאספתם ואת ההחלטות שמכוונות את השלב הבא.</p></div>
+      </article>
+      <article class="oc oc--out" id="oc-dna">
+        <span class="oc__step" aria-hidden="true">02</span>
+        <span class="oc__badge" aria-hidden="true"><i class="ti ti-fingerprint"></i></span>
+        <!-- vignette: the same color stripe lands on three different outputs -->
+        <div class="vig vig--dna" aria-hidden="true">
+          <svg viewBox="0 0 200 72" width="200" height="72">
+            <rect x="136" y="20" width="56" height="32" rx="3" fill="#FFFFFF" stroke="#0F172A" stroke-width="3"/>
+            <rect x="141" y="25" width="46" height="6" rx="1.5" fill="#FCD34D" stroke="#0F172A" stroke-width="1.5" class="vd-stripe" style="--k:0"/>
+            <circle cx="146" cy="44" r="4" fill="#047857" class="vd-dot" style="--k:0"/>
+            <rect x="94" y="12" width="28" height="46" rx="3" fill="#FFFFFF" stroke="#0F172A" stroke-width="3"/>
+            <rect x="98" y="17" width="20" height="6" rx="1.5" fill="#FCD34D" stroke="#0F172A" stroke-width="1.5" class="vd-stripe" style="--k:1"/>
+            <circle cx="103" cy="50" r="4" fill="#047857" class="vd-dot" style="--k:1"/>
+            <rect x="10" y="19" width="58" height="34" rx="10" fill="#FFFFFF" stroke="#0F172A" stroke-width="3"/>
+            <rect x="17" y="25" width="44" height="6" rx="1.5" fill="#FCD34D" stroke="#0F172A" stroke-width="1.5" class="vd-stripe" style="--k:2"/>
+            <path d="M35 37 L35 47 L44 42 Z" fill="#0F172A"/>
+            <circle cx="20" cy="45" r="4" fill="#047857" class="vd-dot" style="--k:2"/>
+          </svg>
+        </div>
+        <div class="oc__body"><h3 class="oc__h">מדברים בשפה חופשית, והתוצר שומר על <span class="nw">ה-DNA</span> שלכם.</h3><p class="oc__p">אתם מגדירים את <span class="nw">ה-DNA</span> של העבודה שלכם, כלומר איך שהתוצרים שלכם נשמעים, בנויים ונראים. כשאתם מבקשים תוצר מסוג חדש, כמו מצגת, עמוד נחיתה או רקע לזום, הסוכן קורא את הכללים ששמרתם ואתם משווים את התוצאה למה שאישרתם כדי לוודא שהקו שלכם נשמר.</p></div>
+      </article>
+      <article class="oc oc--out" id="oc-c">
+        <span class="oc__step" aria-hidden="true">03</span>
+        <span class="oc__badge" aria-hidden="true"><i class="ti ti-folders"></i></span>
+        <!-- vignette: the tool on top flips, the frame underneath stays -->
+        <div class="vig vig--c" aria-hidden="true">
+          <svg viewBox="0 0 120 72" width="120" height="72">
+            <line x1="60" y1="28" x2="60" y2="38" stroke="#0F172A" stroke-width="3"/>
+            <rect x="8" y="37" width="104" height="30" rx="8" fill="#D1FAE5" stroke="#0F172A" stroke-width="3"/>
+            <rect x="22" y="45" width="14" height="14" rx="2" fill="#0F172A"/>
+            <rect x="53" y="45" width="14" height="14" rx="2" fill="#0F172A"/>
+            <rect x="84" y="45" width="14" height="14" rx="2" fill="#0F172A"/>
+            <circle class="vc-tool" cx="60" cy="16" r="12" stroke="#0F172A" stroke-width="3"/>
+          </svg>
+        </div>
+        <div class="oc__body"><h3 class="oc__h">הכלים מתחלפים וסביבת העבודה נשארת שלכם.</h3><p class="oc__p">אתם שומרים אצלכם את הסוכנים, מסדרים בנפרד את העובדות, הידע וכללי העבודה, ומשתמשים במה ששמרתם גם בכלי נוסף.</p></div>
+      </article>
+    </div>
+    <div class="how">
+      <span class="sec__kick"><i class="ti ti-list-details" aria-hidden="true"></i> איך זה עובד ביום-יום</span>
+      <div class="how-pair">
+        <article class="oc oc--how" id="how-5a">
+          <span class="oc__badge" aria-hidden="true"><i class="ti ti-map-pins"></i></span>
+          <!-- vignette: a dashed path draws through three stops and a pin drops -->
+          <div class="vig vig--map" aria-hidden="true">
+            <svg viewBox="0 0 120 72" width="120" height="72">
+              <defs><mask id="map-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="72">
+                <path class="vm-draw" d="M100 52 C 90 22, 74 18, 62 34 S 32 60, 20 34" fill="none" stroke="#FFFFFF" stroke-width="8" pathLength="100" stroke-dasharray="100" stroke-dashoffset="0"/>
+              </mask></defs>
+              <path d="M100 52 C 90 22, 74 18, 62 34 S 32 60, 20 34" fill="none" stroke="#0F172A" stroke-width="3" stroke-dasharray="5 5" stroke-linecap="round" mask="url(#map-mask)"/>
+              <circle class="vm-dot vm-d1" cx="100" cy="52" r="6" stroke="#0F172A" stroke-width="2.5"/>
+              <circle class="vm-dot vm-d2" cx="62" cy="34" r="6" stroke="#0F172A" stroke-width="2.5"/>
+              <circle class="vm-dot vm-d3" cx="20" cy="34" r="6" stroke="#0F172A" stroke-width="2.5"/>
+              <g class="vm-pin"><path d="M20 27 C 14 21, 11 17, 11 13 A 9 9 0 0 1 29 13 C 29 17, 26 21, 20 27 Z" fill="#FB7185" stroke="#0F172A" stroke-width="2.5" stroke-linejoin="round"/><circle cx="20" cy="13" r="3" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/></g>
+            </svg>
+          </div>
+          <div class="oc__body"><h3 class="oc__h"><span class="mk-how">אתם מחזיקים את המפה של העבודה.</span></h3><p class="oc__p">אתם יודעים איפה החומר שכבר אספתם, איפה כל סוג עבודה נעשה ובאיזה כלי להמשיך בשלב הבא.</p></div>
+        </article>
+        <!-- the fix becomes a rule: knowledge+rules → agent+skill → output, and the arc back to the rule.
+             Scrubbed by GSAP ScrollTrigger; without GSAP (or with reduced motion) it shows finished. -->
+        <div class="fixg" aria-hidden="true">
+          <svg class="fg-desk" viewBox="0 0 720 104" width="720" height="104">
+            <path class="fg-arc" d="M90 42 C 90 4, 630 4, 630 42" fill="none" stroke="#FCD34D" stroke-width="5" stroke-linecap="round"/>
+            <g class="fg-node"><rect x="554" y="48" width="160" height="46" rx="12" fill="#0F172A"/><rect x="550" y="44" width="160" height="46" rx="12" fill="#FFFFFF" stroke="#0F172A" stroke-width="3"/><text x="630" y="73" text-anchor="middle" direction="rtl" font-family="Rubik, system-ui, sans-serif" font-weight="800" font-size="18" fill="#0F172A">ידע וכללים</text></g>
+            <path class="fg-line" d="M548 67 H446" fill="none" stroke="#047857" stroke-width="4" stroke-linecap="round"/>
+            <path class="fg-head" d="M455 59 L446 67 L455 75" fill="none" stroke="#047857" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="fg-node"><rect x="284" y="48" width="160" height="46" rx="12" fill="#0F172A"/><rect x="280" y="44" width="160" height="46" rx="12" fill="#FFFFFF" stroke="#0F172A" stroke-width="3"/><text x="360" y="73" text-anchor="middle" direction="rtl" font-family="Rubik, system-ui, sans-serif" font-weight="800" font-size="18" fill="#0F172A">סוכן וסקיל</text></g>
+            <path class="fg-line" d="M278 67 H176" fill="none" stroke="#047857" stroke-width="4" stroke-linecap="round"/>
+            <path class="fg-head" d="M185 59 L176 67 L185 75" fill="none" stroke="#047857" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="fg-node"><rect x="14" y="48" width="160" height="46" rx="12" fill="#0F172A"/><rect x="10" y="44" width="160" height="46" rx="12" fill="#FFFFFF" stroke="#0F172A" stroke-width="3"/><text x="90" y="73" text-anchor="middle" direction="rtl" font-family="Rubik, system-ui, sans-serif" font-weight="800" font-size="18" fill="#0F172A">תוצר</text></g>
+            <g class="fg-check"><circle cx="704" cy="46" r="14" fill="#10B981" stroke="#0F172A" stroke-width="3"/><path d="M697 46 L702 51 L711 41" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></g>
+          </svg>
+          <svg class="fg-mob" viewBox="0 0 346 96" width="346" height="96">
+            <path class="fg-arc" d="M51 40 C 51 6, 295 6, 295 40" fill="none" stroke="#FCD34D" stroke-width="4.5" stroke-linecap="round"/>
+            <g class="fg-node"><rect x="253" y="47" width="88" height="40" rx="10" fill="#0F172A"/><rect x="250" y="44" width="88" height="40" rx="10" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5"/><text x="294" y="69" text-anchor="middle" direction="rtl" font-family="Rubik, system-ui, sans-serif" font-weight="800" font-size="14" fill="#0F172A">ידע וכללים</text></g>
+            <path class="fg-line" d="M247 64 H222" fill="none" stroke="#047857" stroke-width="3.5" stroke-linecap="round"/>
+            <path class="fg-head" d="M228 58 L222 64 L228 70" fill="none" stroke="#047857" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="fg-node"><rect x="132" y="47" width="88" height="40" rx="10" fill="#0F172A"/><rect x="129" y="44" width="88" height="40" rx="10" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5"/><text x="173" y="69" text-anchor="middle" direction="rtl" font-family="Rubik, system-ui, sans-serif" font-weight="800" font-size="14" fill="#0F172A">סוכן וסקיל</text></g>
+            <path class="fg-line" d="M126 64 H101" fill="none" stroke="#047857" stroke-width="3.5" stroke-linecap="round"/>
+            <path class="fg-head" d="M107 58 L101 64 L107 70" fill="none" stroke="#047857" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="fg-node"><rect x="10" y="47" width="88" height="40" rx="10" fill="#0F172A"/><rect x="7" y="44" width="88" height="40" rx="10" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5"/><text x="51" y="69" text-anchor="middle" direction="rtl" font-family="Rubik, system-ui, sans-serif" font-weight="800" font-size="14" fill="#0F172A">תוצר</text></g>
+            <g class="fg-check"><circle cx="331" cy="45" r="11" fill="#10B981" stroke="#0F172A" stroke-width="2.5"/><path d="M325.5 45 L329.5 49 L336.5 41" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+          </svg>
+        </div>
+        <article class="oc oc--how" id="how-5b">
+          <span class="oc__badge" aria-hidden="true"><i class="ti ti-adjustments-alt"></i></span>
+          <div class="oc__body"><h3 class="oc__h"><span class="mk-how">מתקנים את התנור ולא את העוגה</span></h3><p class="oc__p">כשמשהו בתוצר דורש תיקון, אתם לא מתקנים אותו ידנית כל פעם מחדש, אלא הופכים את התיקון לכלל במקום הנכון כדי שלא תצטרכו להסביר פעמיים.</p></div>
+        </article>
+      </div>
     </div>
   </div>
 </section>
@@ -507,7 +967,7 @@
       <h2 class="sec__title">אחת-עשרה יכולות, <span class="u">צעד אחר צעד</span></h2>
       <p class="sec__lead">מסע שמטפס מבחירת הכלי הנכון ועד לזיהוי הזדמנות חדשה ובניית סוכן עבורה, שלכם, לבד.</p>
     </div>
-    <div class="ladder stagger">
+    <div class="ladder">
       <div class="rung"><div class="rung__node"><span class="rung__num ltr">01</span><i class="ti ti-tool"></i></div><div class="rung__card"><h3>הכלי הנכון</h3><p>לבחור את הכלי הנכון לכל משימה.</p></div></div>
       <div class="rung"><div class="rung__node"><span class="rung__num ltr">02</span><i class="ti ti-list-check"></i></div><div class="rung__card"><h3>תכנון בלי ניחושים</h3><p>לפרק משימה מורכבת לתכנון ברור, כך שה-AI יבצע בלי לנחש.</p></div></div>
       <div class="rung"><div class="rung__node"><span class="rung__num ltr">03</span><i class="ti ti-brain"></i></div><div class="rung__card"><h3>ניהול ידע וזיכרון</h3><p>לבנות בסיס ידע אישי ושכבות זיכרון, כך שה-AI יכיר אתכם ואת העבודה שלכם.</p></div></div>
@@ -523,30 +983,29 @@
   </div>
 </section>
 
-<!-- ════ SECTION 2 — לא רק תשתמשו. תבנו. (showcase גדול של הכל) ════ -->
+<!-- ════ SECTION 2 — מה תבנו ותפיקו (15 chips: title + icon) ════ -->
 <section class="sec build">
   <div class="wrap">
     <div class="reveal" style="text-align:center;">
-      <span class="sec__kick"><i class="ti ti-hammer" aria-hidden="true"></i> מה תבנו ותפיקו</span>
-      <h2 class="sec__title">לא רק תשתמשו. <span class="u">תבנו.</span></h2>
+      <h2 class="sec__title">מה תבנו ותפיקו</h2>
       <p class="sec__lead" style="margin:0 auto;">לאורך הקורס תבנו ותפיקו ארסנל שלם שנשאר אצלכם, מותאם בדיוק לעבודה שלכם.</p>
     </div>
-    <div class="show-grid stagger">
-      <article class="cell"><div class="cell__ic"><i class="ti ti-robot"></i></div><h3>סוכנים <span class="en">Agents</span></h3><p>סוכני AI עצמאיים שמבצעים משימות חוזרות במקומכם.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-puzzle"></i></div><h3>סקילים <span class="en">Skills</span></h3><p>יכולות מותאמות שמרחיבות כל סוכן לפי התפקיד.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-device-mobile"></i></div><h3>שליטה מהנייד</h3><p>הסוכנים מדווחים לכם לטלפון, ואפשר להפעיל אותם משם.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-plug-connected"></i></div><h3>קונקטורים <span class="en">Connectors</span></h3><p>חיבורים חיים ל-Gmail, ל-Calendar ועוד.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-hierarchy-2"></i></div><h3>מטא-סוכן</h3><p>סוכן שבונה עבורכם סוכנים חדשים.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-link"></i></div><h3>שרשראות עבודה</h3><p>שרשראות שנבנות סביב תהליכי העבודה והצרכים שלכם.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-notebook"></i></div><h3>בסיס ידע אישי</h3><p>ידע שנבנה, מתעדכן ונשלף בקלות.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-stack-2"></i></div><h3>שכבות זיכרון</h3><p>זיכרון מסודר שה-AI שולף ממנו בדיוק בזמן.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-microphone-2"></i></div><h3>סוכן תמלול וניתוח</h3><p>מתמלל ומנתח כל פגישה ושיחת עבודה.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-search"></i></div><h3><span class="ltr">Deep Research</span></h3><p>מחקר עומק רב-מקורות בלחיצה אחת.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-presentation"></i></div><h3>מצגות מקצועיות</h3><p>מרעיון למצגת מלוטשת בזרימה אחת.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-world-www"></i></div><h3>עמודי HTML חיים</h3><p>דפים אמיתיים שעולים לאוויר.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-palette"></i></div><h3>מערכת עיצוב</h3><p>שפה חזותית עקבית לכל התוצרים.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-server-2"></i></div><h3>שרת MCP</h3><p>חיבור כלים חיצוניים ל-AI שלכם.</p></article>
-      <article class="cell"><div class="cell__ic"><i class="ti ti-automation"></i></div><h3>אוטומציות</h3><p>תהליכים שרצים לבד ברקע.</p></article>
+    <div class="show-grid">
+      <article class="cell"><div class="cell__ic"><i class="ti ti-robot"></i></div><h3>סוכנים <span class="en">Agents</span></h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-puzzle"></i></div><h3>סקילים <span class="en">Skills</span></h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-device-mobile"></i></div><h3>שליטה מהנייד</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-plug-connected"></i></div><h3>קונקטורים <span class="en">Connectors</span></h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-hierarchy-2"></i></div><h3>מטא-סוכן</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-link"></i></div><h3>שרשראות עבודה</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-notebook"></i></div><h3>בסיס ידע אישי</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-stack-2"></i></div><h3>שכבות זיכרון</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-microphone-2"></i></div><h3>סוכן תמלול וניתוח</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-search"></i></div><h3><span class="ltr">Deep Research</span></h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-presentation"></i></div><h3>מצגות מקצועיות</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-world-www"></i></div><h3>עמודי HTML חיים</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-palette"></i></div><h3>מערכת עיצוב</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-server-2"></i></div><h3>שרת MCP</h3></article>
+      <article class="cell"><div class="cell__ic"><i class="ti ti-automation"></i></div><h3>אוטומציות</h3></article>
     </div>
   </div>
 </section>
@@ -560,7 +1019,7 @@
       <p class="sec__lead" style="margin:0 auto;">אותה שיטה בדיוק, בהיקף ובפורמט שמתאימים לכם.</p>
     </div>
     <div class="tracks__grid stagger">
-      <article class="track"><h3>הקורס המלא</h3><p>חמישה מפגשים של שלוש שעות, עם יחידות בית לפני ואחרי כל מפגש. הקבוצה קטנה, והכל נבנה על החומרים האמיתיים שלכם.</p></article>
+      <article class="track"><h3>הקורס המלא <span class="track__badge">המסלול המרכזי</span></h3><p>חמישה מפגשים של שלוש שעות, עם יחידות בית לפני ואחרי כל מפגש. הקבוצה קטנה, והכל נבנה על החומרים האמיתיים שלכם.</p></article>
       <article class="track"><h3>ליווי אישי 1:1</h3><p>מסלול פרטי שנבנה כולו סביבכם: התוכן, הקצב והדוגמאות מגיעים מהעבודה שלכם.</p></article>
       <article class="track"><h3>יום האקתון לארגונים</h3><p>יום עבודה מרוכז שבו הצוות בונה סוכנים למשימות אמיתיות מהעבודה, ויוצא בסוף היום עם תוצרים מוכנים לשימוש.</p></article>
       <article class="track"><h3>סדנאות וקורסים לארגונים</h3><p>סדנה ממוקדת או קורס מותאם לצוות, לכלים ולצרכים שלכם, בפורמט שנבנה יחד.</p></article>
@@ -581,16 +1040,15 @@
   </div>
   <!-- accessible tool list (outside the aria-hidden decorative marquees) -->
   <ul class="sr-only" lang="en">
-    <li>Claude Code</li><li>Claude Desktop</li><li>Notion</li><li>Gemini Notebook</li>
-    <li>Git</li><li>GitHub</li><li>HTML</li><li>MCP</li><li>VS Code</li>
-    <li>Skills</li><li>Agents</li><li>Plugins</li><li>Connectors</li><li>Automations</li>
-    <li>Knowledge Base</li><li>Presentations</li>
+    <li>Claude Code</li><li>Claude Desktop</li><li>ChatGPT</li><li>Notion</li><li>Gemini Notebook</li>
+    <li>Git</li><li>GitHub</li><li>HTML</li><li>MCP</li><li>VS Code</li><li>Telegram</li>
   </ul>
   <!-- single-row belt; JS clones the set until it fills ≥2× the viewport, then scrolls it forever -->
   <div class="belt__marquee" data-belt aria-hidden="true">
     <div class="belt__track" data-belt-track>
       <span class="chip chip--a"><i class="ti ti-terminal-2"></i> <span class="nm" lang="en">Claude Code</span></span>
       <span class="chip chip--b"><i class="ti ti-robot"></i> <span class="nm" lang="en">Claude Desktop</span></span>
+      <span class="chip chip--a"><i class="ti ti-message-chatbot"></i> <span class="nm" lang="en">ChatGPT</span></span>
       <span class="chip chip--c"><i class="ti ti-notebook"></i> <span class="nm" lang="en">Notion</span></span>
       <span class="chip chip--e"><i class="ti ti-git-branch"></i> <span class="nm" lang="en">Git</span></span>
       <span class="chip chip--a"><i class="ti ti-brand-github"></i> <span class="nm" lang="en">GitHub</span></span>
@@ -598,13 +1056,7 @@
       <span class="chip chip--c"><i class="ti ti-plug-connected"></i> <span class="nm" lang="en">MCP</span></span>
       <span class="chip chip--d"><i class="ti ti-brand-vscode"></i> <span class="nm" lang="en">VS Code</span></span>
       <span class="chip chip--e"><i class="ti ti-book"></i> <span class="nm" lang="en">Gemini Notebook</span></span>
-      <span class="chip chip--c"><i class="ti ti-puzzle"></i> <span class="nm" lang="en">Skills</span></span>
-      <span class="chip chip--a"><i class="ti ti-robot"></i> <span class="nm" lang="en">Agents</span></span>
-      <span class="chip chip--d"><i class="ti ti-plug"></i> <span class="nm" lang="en">Plugins</span></span>
-      <span class="chip chip--b"><i class="ti ti-plug-connected"></i> <span class="nm" lang="en">Connectors</span></span>
-      <span class="chip chip--e"><i class="ti ti-automation"></i> <span class="nm" lang="en">Automations</span></span>
-      <span class="chip chip--a"><i class="ti ti-brain"></i> <span class="nm" lang="en">Knowledge Base</span></span>
-      <span class="chip chip--c"><i class="ti ti-presentation"></i> <span class="nm" lang="en">Presentations</span></span>
+      <span class="chip chip--d"><i class="ti ti-brand-telegram"></i> <span class="nm" lang="en">Telegram</span></span>
     </div>
   </div>
 </section>
@@ -617,7 +1069,7 @@
   <span class="final__deco d-circle" style="top:60px; right:14%; width:30px; height:30px; background:var(--sunshine); border:3px solid var(--ink);"></span>
   <img class="benjamin benjamin--final" src="assets/benjamin/wave.png" alt="" aria-hidden="true" loading="lazy" width="235" height="508">
   <div class="final__in">
-    <h2>רוצים AI <span class="nw">שסוף סוף</span> <span class="stamp">מתאים לכם?</span></h2>
+    <h2>רוצים AI <span class="nw">שסוף סוף</span> <span class="stamp slam slam--fin">מתאים לכם?</span></h2>
     <p>כתבו לי כמה מילים על העבודה שלכם, ונבדוק יחד איזה מסלול יתאים לכם.</p>
     <div class="final__row">
       <a class="final__btn" href="mailto:ben.akiva@tailorplayed.com?subject=Benefits%20-%20%D7%9C%D7%A4%D7%A8%D7%98%D7%99%D7%9D"><i class="ti ti-mail" aria-hidden="true"></i> דברו איתי</a>
@@ -639,178 +1091,485 @@
   </div>
 </footer>
 
+<!-- ════ FLOATING CONTACT — a «דברו איתי» pill with the B logo. Hidden until the hero buttons leave the screen;
+     hidden again while the tracks button or the final section is on screen. ════ -->
+<div class="fab" hidden>
+  <button class="fab__btn" type="button"><span class="fab__logo" aria-hidden="true"><svg focusable="false"><use href="#logo-b"/></svg></span>דברו איתי</button>
+</div>
+
+<!-- ════ CONTACT ARC — one shared pop of WhatsApp / email / phone. Every «דברו איתי» opens it around itself
+     (hero, tracks, final, the floating pill). The script anchors it, gives the links their href (WhatsApp and phone
+     from CONTACT_PHONE, email from the clicked button's own mailto) and keeps it inside the screen.
+     Without JS the three «דברו איתי» links stay plain mailto links and this stays invisible. ════ -->
+<div class="carc" id="contact-arc">
+  <a class="carc__item carc__item--wa" data-contact="whatsapp" target="_blank" rel="noopener" aria-label="וואטסאפ"><i class="ti ti-brand-whatsapp" aria-hidden="true"></i><span class="carc__tip" aria-hidden="true">וואטסאפ</span></a>
+  <a class="carc__item carc__item--mail" data-contact="mail" aria-label="מייל"><i class="ti ti-mail" aria-hidden="true"></i><span class="carc__tip" aria-hidden="true">מייל</span></a>
+  <a class="carc__item carc__item--tel" data-contact="phone" aria-label="טלפון"><i class="ti ti-phone" aria-hidden="true"></i><span class="carc__tip" aria-hidden="true">טלפון</span></a>
+</div>
+
 <script>
+  /* the phone number behind the contact arc's WhatsApp and phone links. Ben still needs to confirm it.
+     (The arc's email link is the clicked button's own mailto.) */
+  var CONTACT_PHONE = '+972524459185';
+
   (function(){
+    'use strict';
+    /* everything that moves is gated: with reduced motion body never gets .anim and no effect starts */
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(reduce) return;
-    document.body.classList.add('anim');
+    var anim = !reduce;
+    if(anim) document.body.classList.add('anim');
 
-    // reveal on scroll (sections + staggered groups)
-    var io = new IntersectionObserver(function(es){
-      es.forEach(function(e){
-        if(!e.isIntersecting) return;
-        var el = e.target;
-        if(el.classList.contains('stagger')){
-          var kids = el.children, n = kids.length;
-          for(var i=0;i<n;i++){ kids[i].style.transitionDelay = Math.min(i*0.05, 0.6) + 's'; }
-        }
-        el.classList.add('in');
-        io.unobserve(el);
+    function $(s, r){ return (r || document).querySelector(s); }
+    function $$(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+    function vh(){ return window.innerHeight || document.documentElement.clientHeight; }
+    function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+    function io(cb, opts){ return ('IntersectionObserver' in window) ? new IntersectionObserver(cb, opts) : null; }
+    /* run fn once per element when it first comes into view (at once if it is already above the screen) */
+    function onEnter(els, opts, fn){
+      els = els.filter(Boolean);
+      var o = io(function(es){ es.forEach(function(e){ if(e.isIntersecting){ o.unobserve(e.target); fn(e.target); } }); }, opts);
+      els.forEach(function(el){ if(!o || el.getBoundingClientRect().bottom < 0) fn(el); else o.observe(el); });
+    }
+
+    /* ── reveal on scroll: sections fade up; the fit rows and the tracks appear one by one ── */
+    if(anim){
+      onEnter($$('.reveal'), { threshold:.12 }, function(el){ el.classList.add('in'); });
+      $$('.stagger').forEach(function(list){
+        onEnter(Array.prototype.slice.call(list.children), { threshold:.01, rootMargin:'0px 0px -32px 0px' }, function(k){ k.classList.add('in-self'); });
       });
-    }, { threshold:.12 });
-    document.querySelectorAll('.reveal, .stagger').forEach(function(el){ io.observe(el); });
+    }
 
-    // gentle mouse parallax on hero deco
-    var decos = Array.prototype.slice.call(document.querySelectorAll('.hero__deco'));
-    var hero = document.querySelector('.hero');
-    if(hero && decos.length){
+    /* ── gentle mouse parallax on the hero deco ── */
+    (function(){
+      if(!anim) return;
+      var decos = $$('.hero__deco'), hero = $('.hero');
+      if(!hero || !decos.length) return;
       hero.addEventListener('mousemove', function(ev){
         var r = hero.getBoundingClientRect();
-        var mx = (ev.clientX - r.left) / r.width - .5;
-        var my = (ev.clientY - r.top) / r.height - .5;
+        var mx = (ev.clientX - r.left) / r.width - .5, my = (ev.clientY - r.top) / r.height - .5;
         decos.forEach(function(d){
           var depth = parseFloat(d.getAttribute('data-depth')) || 0;
           d.style.transform = 'translate(' + (mx*depth).toFixed(1) + 'px,' + (my*depth).toFixed(1) + 'px)';
         });
       });
-      hero.addEventListener('mouseleave', function(){ decos.forEach(function(d){ d.style.transform=''; }); });
-    }
-  })();
+      hero.addEventListener('mouseleave', function(){ decos.forEach(function(d){ d.style.transform = ''; }); });
+    })();
 
-  /* ── TOOLBELT engine: infinite single-row scroll + pointer-drag (mouse + touch) ── */
-  (function(){
-    var view = document.querySelector('[data-belt]');
-    var track = view && view.querySelector('[data-belt-track]');
-    if(!view || !track) return;
-
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var SPEED = 80; /* px per second, leftward — same on every viewport */
-
-    /* snapshot the original set of chips (one loop's worth) */
-    var baseChips = Array.prototype.slice.call(track.children);
-    var setW = 0;          /* width of ONE full set incl. the trailing gap (wrap period) */
-    var pos = 0;           /* current translateX (<= 0, wrapped into (-setW, 0]) */
-    var last = 0;          /* rAF timestamp */
-    var running = false;
-    var raf = 0;
-
-    function measureSetWidth(){
-      /* the flex gap changes at the mobile breakpoint — always read the live value */
-      var gap = parseFloat(getComputedStyle(track).columnGap);
-      if(isNaN(gap)) gap = 18;
-      var w = 0;
-      for(var i=0;i<baseChips.length;i++){ w += baseChips[i].getBoundingClientRect().width + gap; }
-      return w; /* includes one trailing gap → seamless period */
-    }
-
-    /* clone the base set until the track is at least (viewport*2 + one set) wide */
-    function fill(){
-      /* strip any previous clones back to the base set */
-      while(track.children.length > baseChips.length){ track.removeChild(track.lastChild); }
-      setW = measureSetWidth();
-      if(setW <= 0) return;
-      var target = Math.max(view.clientWidth, window.innerWidth) * 2 + setW;
-      var guard = 0;
-      while(track.getBoundingClientRect().width < target && guard < 40){
-        for(var i=0;i<baseChips.length;i++){ track.appendChild(baseChips[i].cloneNode(true)); }
-        guard++;
+    /* ── TOOLBELT engine: infinite single-row scroll + pointer-drag (mouse + touch).
+          With reduced motion it does not start: the belt stays one complete, wrapping list. ── */
+    (function(){
+      var view = $('[data-belt]'), track = view && $('[data-belt-track]', view);
+      if(!view || !track || !anim) return;
+      view.classList.add('is-live');
+      var SPEED = 80; /* px per second, leftward — same on every viewport */
+      var baseChips = Array.prototype.slice.call(track.children); /* one loop's worth */
+      var setW = 0, pos = 0, last = 0, running = false, raf = 0, visible = !('IntersectionObserver' in window);
+      var dragging = false, startX = 0, startPos = 0, pointerId = null;
+      function measureSetWidth(){
+        /* the flex gap changes at the mobile breakpoint — always read the live value */
+        var gap = parseFloat(getComputedStyle(track).columnGap); if(isNaN(gap)) gap = 18;
+        var w = 0; baseChips.forEach(function(c){ w += c.getBoundingClientRect().width + gap; });
+        return w; /* includes one trailing gap → seamless period */
       }
-    }
-
-    function wrap(){
+      /* clone the base set until the track is at least (viewport*2 + one set) wide */
+      function fill(){
+        while(track.children.length > baseChips.length) track.removeChild(track.lastChild);
+        setW = measureSetWidth(); if(setW <= 0) return;
+        var target = Math.max(view.clientWidth, window.innerWidth) * 2 + setW, guard = 0;
+        while(track.getBoundingClientRect().width < target && guard < 40){
+          baseChips.forEach(function(c){ track.appendChild(c.cloneNode(true)); }); guard++;
+        }
+      }
       /* keep pos inside (-setW, 0] so translate never runs out of content on either edge */
-      if(setW <= 0) return;
-      pos = pos % setW;
-      if(pos > 0) pos -= setW;
-    }
-    function apply(){ track.style.transform = 'translateX(' + pos.toFixed(2) + 'px)'; }
+      function wrap(){ if(setW <= 0) return; pos = pos % setW; if(pos > 0) pos -= setW; }
+      function apply(){ track.style.transform = 'translateX(' + pos.toFixed(2) + 'px)'; }
+      function frame(ts){
+        if(!running) return;
+        if(!last) last = ts;
+        var dt = (ts - last) / 1000; last = ts; if(dt > 0.1) dt = 0.1; /* clamp after tab-switch */
+        pos -= SPEED * dt; wrap(); apply();
+        raf = requestAnimationFrame(frame);
+      }
+      function start(){ if(running || dragging || !visible) return; running = true; last = 0; raf = requestAnimationFrame(frame); }
+      function stop(){ running = false; if(raf) cancelAnimationFrame(raf); raf = 0; }
+      view.addEventListener('pointerdown', function(e){
+        dragging = true; stop(); startX = e.clientX; startPos = pos; pointerId = e.pointerId;
+        view.classList.add('dragging'); try{ view.setPointerCapture(pointerId); }catch(_){}
+      });
+      view.addEventListener('pointermove', function(e){ if(!dragging) return; pos = startPos + (e.clientX - startX); wrap(); apply(); });
+      function endDrag(){
+        if(!dragging) return; dragging = false; view.classList.remove('dragging');
+        if(pointerId !== null){ try{ view.releasePointerCapture(pointerId); }catch(_){} pointerId = null; }
+        start(); /* resume from the new position */
+      }
+      view.addEventListener('pointerup', endDrag); view.addEventListener('pointercancel', endDrag); view.addEventListener('lostpointercapture', endDrag);
+      function refit(){ stop(); fill(); wrap(); apply(); start(); }
+      fill(); wrap(); apply();
+      /* fonts change chip widths — re-measure once Rubik is actually in */
+      if(document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+      var rt = 0; window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(refit, 150); });
+      /* pause the auto-run when the belt is off-screen (drag still works) */
+      if('IntersectionObserver' in window){
+        new IntersectionObserver(function(es){ es.forEach(function(en){ visible = en.isIntersecting; if(visible) start(); else stop(); }); }, { threshold:0 }).observe(view);
+      } else start();
+    })();
 
-    function frame(ts){
-      if(!running){ return; }
-      if(!last) last = ts;
-      var dt = (ts - last) / 1000; last = ts;
-      if(dt > 0.1) dt = 0.1; /* clamp after tab-switch */
-      pos -= SPEED * dt;
-      wrap(); apply();
-      raf = requestAnimationFrame(frame);
+    /* ── marker sweep under the highlighted words ── */
+    if(anim){
+      var marks = $$('.sec__title .u, .hero__hline .u, .manifesto p em, .story-mk, .mk-how');
+      marks.forEach(function(t){ t.classList.add('mk'); });
+      var em = $('.manifesto p em'); if(em) em.setAttribute('data-t', em.textContent);
+      onEnter(marks, { threshold:.5 }, function(t){ t.classList.add('mk-in'); });
     }
-    function start(){
-      if(running || reduce || dragging) return;
-      running = true; last = 0; raf = requestAnimationFrame(frame);
+
+    /* ── stamps land (the hero stamp runs from CSS on load) ── */
+    if(anim) onEnter($$('.slam'), { threshold:.6 }, function(s){ s.classList.add('slam-go'); });
+
+    /* ── ladder progress line ── */
+    (function(){
+      var lad = $('.ladder'); if(!lad || !anim) return;
+      var rungs = $$('.rung', lad), raf = 0;
+      function upd(){
+        raf = 0; var r = lad.getBoundingClientRect(); if(!r.height) return;
+        lad.style.setProperty('--lp', clamp((vh() * 0.6 - r.top) / r.height, 0, 1).toFixed(4));
+      }
+      function onScroll(){ if(!raf) raf = requestAnimationFrame(upd); }
+      var lio = io(function(es){ es.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('lit'); }); }, { rootMargin:'0px 0px -40% 0px' });
+      rungs.forEach(function(g){
+        if(!lio || g.getBoundingClientRect().top < vh() * 0.6) g.classList.add('lit');
+        if(lio) lio.observe(g);
+      });
+      window.addEventListener('scroll', onScroll, { passive:true });
+      window.addEventListener('resize', onScroll);
+      upd();
+    })();
+
+    /* ── outcome-card vignettes: each plays once when its card is half in view ── */
+    if(anim) onEnter($$('.oc').filter(function(c){ return $('.vig', c); }), { threshold:.5 }, function(c){ c.classList.add('play'); });
+
+    /* ── the fix diagram: GSAP plays the process once, as a short story, when the diagram is 60% in view:
+          the rules node pops, a line draws to the agent, the agent pops, a line draws to the output, the output pops,
+          a short pause, then the arc draws back from the output to the rules and the check stamps on the rules.
+          Until then it rests in a calm ready state (nodes in place, lines not drawn yet). It resets only after it has
+          left the screen downward (scrolling back up), so it replays when you come down again; leaving upward keeps it.
+          Never touched with reduced motion; if GSAP does not load, the diagram stays fully drawn. ── */
+    (function(){
+      if(!anim) return;
+      var done = false;
+      function len(p){ try{ return p.getTotalLength() || 300; }catch(_){ return 300; } }
+      function build(svg){
+        var gs = window.gsap, ST = window.ScrollTrigger;
+        var nodes = svg.querySelectorAll('.fg-node'), lines = svg.querySelectorAll('.fg-line'), heads = svg.querySelectorAll('.fg-head');
+        var arc = svg.querySelector('.fg-arc'), chk = svg.querySelector('.fg-check');
+        /* the ready state */
+        Array.prototype.forEach.call(lines, function(l){ var L = len(l); gs.set(l, { strokeDasharray:L, strokeDashoffset:L }); });
+        var A = len(arc); gs.set(arc, { strokeDasharray:A, strokeDashoffset:A });
+        gs.set(heads, { opacity:0 });
+        gs.set(chk, { scale:0, transformOrigin:'50% 50%' });
+        /* the story, about 2.4s */
+        var tl = gs.timeline({ paused:true });
+        function pop(n){ tl.to(n, { scale:1.12, duration:.1, ease:'power2.out', transformOrigin:'50% 50%' }).to(n, { scale:1, duration:.14, ease:'back.out(3)' }); }
+        function draw(i){ tl.to(lines[i], { strokeDashoffset:0, duration:.38, ease:'power1.inOut' }).to(heads[i], { opacity:1, duration:.08 }, '-=.08'); }
+        pop(nodes[0]); draw(0); pop(nodes[1]); draw(1); pop(nodes[2]);
+        tl.to(arc, { strokeDashoffset:0, duration:.55, ease:'power1.inOut' }, '+=.22')
+          .to(chk, { scale:1, duration:.3, ease:'back.out(3)', transformOrigin:'50% 50%' });
+        function play(){ if(tl.progress() === 0) tl.play(); }
+        /* plays when 60% of the diagram is on screen (also when you reach it from below) */
+        ST.create({ trigger:svg, start:'60% bottom', onEnter:play, onEnterBack:play });
+        /* resets once the diagram has left the screen downward */
+        ST.create({ trigger:svg, start:'top bottom', onLeaveBack:function(){ tl.pause(0); } });
+      }
+      function init(){
+        if(done || !(window.gsap && window.ScrollTrigger)) return;
+        done = true;
+        try{
+          var gs = window.gsap, ST = window.ScrollTrigger;
+          gs.registerPlugin(ST);
+          var desk = $('.fixg .fg-desk'), mob = $('.fixg .fg-mob');
+          /* only the svg that is on screen (desktop or phone) is built; matchMedia rebuilds it when the width crosses 760px
+             and reverts everything if the visitor turns on reduced motion later */
+          gs.matchMedia().add({ desk:'(min-width:761px)', mob:'(max-width:760px)', motion:'(prefers-reduced-motion: no-preference)' }, function(ctx){
+            var c = ctx.conditions; if(!c.motion) return;
+            var svg = c.desk ? desk : mob; if(svg) build(svg);
+          });
+          /* trigger positions follow the final layout, after the web fonts and the images */
+          if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ ST.refresh(); });
+          if(document.readyState === 'complete') ST.refresh(); else window.addEventListener('load', function(){ ST.refresh(); });
+        }catch(_){}
+      }
+      document.addEventListener('DOMContentLoaded', init);
+      window.addEventListener('load', init);
+    })();
+
+    /* ── folder beside the promise: tabs spring up in view; hover/tap lifts a tab ── */
+    (function(){
+      var f = $('.folder'); if(!f) return;
+      f.addEventListener('click', function(e){ var t = e.target.closest('.ftab'); if(t) t.classList.toggle('lift'); });
+      if(anim) onEnter([f], { threshold:.5 }, function(){ f.classList.add('open'); });
+    })();
+
+    /* ── stacking outcome cards: each card shrinks a little as the next one slides over it ── */
+    (function(){
+      var grid = $('.outc__grid'); if(!grid || !anim) return;
+      var cs = $$('.oc', grid), raf = 0, on = false;
+      function upd(){
+        raf = 0;
+        if(!on){ cs.forEach(function(c){ c.style.removeProperty('--cs'); }); return; }
+        for(var i = 0; i < cs.length - 1; i++){
+          var a = cs[i].getBoundingClientRect(), b = cs[i + 1].getBoundingClientRect();
+          var s0 = a.top + cs[i].offsetHeight, s1 = a.top + 36;
+          var p = clamp((s0 - b.top) / Math.max(1, s0 - s1), 0, 1);
+          cs[i].style.setProperty('--cs', (1 - 0.03 * p).toFixed(4));
+        }
+        cs[cs.length - 1].style.setProperty('--cs', '1');
+      }
+      function onScroll(){ if(!raf) raf = requestAnimationFrame(upd); }
+      on = vh() > 620; /* same limit as the CSS (min-height:621px) */
+      window.addEventListener('scroll', onScroll, { passive:true });
+      window.addEventListener('resize', function(){ on = vh() > 620; onScroll(); });
+      upd();
+    })();
+
+    /* ── chips land like stickers, a row at a time ── */
+    (function(){
+      if(!anim) return;
+      var cells = $$('.show-grid .cell');
+      var kio = io(function(es){ es.forEach(function(e){ if(e.isIntersecting) landRow(e.target); }); }, { threshold:.4 });
+      function landRow(c){
+        var top = c.offsetTop;
+        cells.filter(function(x){ return !x.classList.contains('stk-in') && Math.abs(x.offsetTop - top) < 8; }).forEach(function(x, i){
+          x.style.setProperty('--i', i); x.style.setProperty('--r', (i % 2 ? -5 : 5) + 'deg');
+          x.classList.add('stk-in'); if(kio) kio.unobserve(x);
+        });
+      }
+      cells.forEach(function(c){ if(!kio || c.getBoundingClientRect().bottom < 0) c.classList.add('stk-in'); else kio.observe(c); });
+    })();
+
+    /* ── Benjamin arrives: by the tracks, and in the final section (watched through the section,
+          because the figure itself starts clipped below it) ── */
+    if(anim){
+      onEnter([$('.benjamin--tracks')], { threshold:.3 }, function(b){ b.classList.add('benj-in'); });
+      var bf = $('.benjamin--final');
+      if(bf) onEnter([$('.final')], { threshold:.3 }, function(){ bf.classList.add('benj-in'); });
     }
-    function stop(){ running = false; if(raf) cancelAnimationFrame(raf); raf = 0; }
 
-    /* ── pointer drag (mouse + touch, unified) ── */
-    var dragging = false, startX = 0, startPos = 0, pointerId = null, moved = false;
-    view.addEventListener('pointerdown', function(e){
-      dragging = true; moved = false; stop();
-      startX = e.clientX; startPos = pos; pointerId = e.pointerId;
-      view.classList.add('dragging');
-      try{ view.setPointerCapture(pointerId); }catch(_){}
-    });
-    view.addEventListener('pointermove', function(e){
-      if(!dragging) return;
-      var dx = e.clientX - startX;
-      if(Math.abs(dx) > 2) moved = true;
-      pos = startPos + dx;
-      wrap(); apply();
-    });
-    function endDrag(){
-      if(!dragging) return;
-      dragging = false;
-      view.classList.remove('dragging');
-      if(pointerId !== null){ try{ view.releasePointerCapture(pointerId); }catch(_){} pointerId = null; }
-      start(); /* resume from the new position */
-    }
-    view.addEventListener('pointerup', endDrag);
-    view.addEventListener('pointercancel', endDrag);
-    view.addEventListener('lostpointercapture', endDrag);
+    /* ── click sparks on the yellow buttons and the stamps ── */
+    (function(){
+      if(!anim) return;
+      var SEL = '.hero__btn:not(.hero__btn--ghost), .track__cta, .final__btn:not(.final__btn--ghost), .fab__btn, .hero h1 .stamp, .final h2 .stamp';
+      function burst(x, y, dark){
+        for(var i = 0; i < 8; i++){
+          var s = document.createElement('span'); s.className = 'spark';
+          s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.setProperty('--a', (i * 45) + 'deg');
+          s.style.background = dark ? '#FCD34D' : '#0F172A';
+          s.addEventListener('animationend', function(){ if(this.parentNode) this.parentNode.removeChild(this); });
+          document.body.appendChild(s);
+        }
+      }
+      document.addEventListener('pointerdown', function(e){
+        var t = e.target && e.target.closest && e.target.closest(SEL); if(!t) return;
+        burst(e.clientX, e.clientY, !!t.closest('.hero, .final'));
+      }, { passive:true });
+    })();
 
-    /* build, then run (auto-run only when motion is allowed) */
-    function build(){ fill(); wrap(); apply(); }
-    function refit(){
-      var wasRunning = running; stop();
-      build();
-      if(wasRunning) start();
-    }
-    build();
-    start();
+    /* ── Cancel Cancer strip: in view, the dino pops up and waves and the crab panics for a moment,
+          then settles back to its sly mood; the idle motion pauses off-screen ── */
+    (function(){
+      var s = $('.ccs'); if(!s || !anim) return;
+      var crab = $('.crab', s);
+      var vio = io(function(es){ es.forEach(function(e){ s.classList.toggle('is-vis', e.isIntersecting); }); }, { threshold:0 });
+      if(vio) vio.observe(s); else s.classList.add('is-vis');
+      onEnter([s], { threshold:.5 }, function(){
+        s.classList.add('is-in');
+        if(!crab) return;
+        crab.classList.remove('mood-sly'); crab.classList.add('mood-panic');
+        setTimeout(function(){ crab.classList.remove('mood-panic'); crab.classList.add('mood-sly'); }, 1700);
+      });
+    })();
 
-    /* fonts change chip widths — re-measure once Rubik is actually in
-       (measuring with the fallback font gives wrong set widths) */
-    if(document.fonts && document.fonts.ready){ document.fonts.ready.then(refit); }
+    /* ── contact arc: every «דברו איתי» (hero, tracks, final, the floating pill) pops the same arc of
+          WhatsApp / email / phone around the right rounded end of the button that was clicked. Only one arc is open at a time.
+          The three CTAs stay mailto links in the HTML; this only takes over their click. ── */
+    (function(){
+      var arc = $('#contact-arc'); if(!arc) return;
+      var items = $$('.carc__item', arc), fab = $('.fab'), fabBtn = fab && $('.fab__btn', fab);
+      var heroCta = $('.hero__btn:not(.hero__btn--ghost)');
+      var triggers = $$('.hero__btn:not(.hero__btn--ghost), .track__cta, .final__btn:not(.final__btn--ghost)');
+      if(fabBtn) triggers.push(fabBtn);
+      var WA = 'https://wa.me/' + CONTACT_PHONE.replace(/\D/g, ''), TEL = 'tel:' + CONTACT_PHONE.replace(/[^\d+]/g, '');
+      var current = null;
+      /* the fan hugs the RIGHT rounded end of the clicked pill: centred on that cap, WhatsApp at about 0° (beside it),
+         email at about 45°, phone at about 90° (above it). If that does not fit the screen, the fan stays centred on the
+         cap and turns upward/inward (15° steps), or downward when there is no room above, and steps out to a wider
+         circle only as far as it must to stay clear of the pill (so it never covers the label). */
+      var ITEM = 48, SHADOW = 3, MARGIN = 8, GAP = 6, CHORD = 58, TIPGAP = 4;
+      var ROT = [0, 15, 30, 45, 60, 75, 90, 105, 120];
+      function pillOf(t){
+        /* the button at rest: its own hover/press lift (a translate) is taken out, so the fan sits on the resting pill */
+        var b = t.getBoundingClientRect(), m = getComputedStyle(t).transform, dx = 0, dy = 0;
+        if(m && m !== 'none' && window.DOMMatrixReadOnly){ var M = new DOMMatrixReadOnly(m); dx = M.m41; dy = M.m42; }
+        var r = { left:b.left - dx, top:b.top - dy, right:b.right - dx, bottom:b.bottom - dy }, cap = (r.bottom - r.top) / 2;
+        /* the pill as a stadium: a segment from the left cap centre to the right cap centre, radius = half the height */
+        return { r:r, cap:cap, cx:r.right - cap, cy:r.top + cap, lx:r.left + cap };
+      }
+      function distToPill(p, x, y){ var px = Math.max(p.lx, Math.min(p.cx, x)); return Math.sqrt((x - px) * (x - px) + (y - p.cy) * (y - p.cy)); }
+      function outOf(b, vw, vh, m){ return Math.max(0, m - b[0]) + Math.max(0, b[2] - (vw - m)) + Math.max(0, m - b[1]) + Math.max(0, b[3] - (vh - m)); }
+      function hits(a, b){ return Math.min(a[2], b[2]) > Math.max(a[0], b[0]) && Math.min(a[3], b[3]) > Math.max(a[1], b[1]); }
+      function layout(t){
+        var vw = document.documentElement.clientWidth, vh = window.innerHeight, p = pillOf(t);
+        var R0 = Math.max(p.cap + ITEM / 2 + 14, CHORD / (2 * Math.sin(Math.PI / 8)));
+        var best = null, bestBad = Infinity;
+        search:
+        for(var dir = 1; dir >= -1; dir -= 2){
+          for(var i = 0; i < ROT.length; i++){
+            for(var R = R0; R <= R0 + 132; R += 12){
+              var step = Math.min(45, 2 * Math.asin(CHORD / (2 * R)) * 180 / Math.PI), bad = 0, pts = [];
+              for(var k = 0; k < 3; k++){
+                var a = dir * (ROT[i] + k * step) * Math.PI / 180, x = R * Math.cos(a), y = -R * Math.sin(a), X = p.cx + x, Y = p.cy + y;
+                bad += 10 * outOf([X - ITEM / 2, Y - ITEM / 2, X + ITEM / 2 + SHADOW, Y + ITEM / 2 + SHADOW], vw, vh, MARGIN);
+                var d = distToPill(p, X, Y) - (p.cap + ITEM / 2 + GAP); if(d < 0) bad -= 10 * d;
+                pts.push([x, y]);
+              }
+              if(bad < bestBad){ bestBad = bad; best = pts; }
+              if(bad === 0) break search;
+            }
+          }
+        }
+        /* the label lives between the two caps */
+        return { cx:p.cx, cy:p.cy, pts:best, vw:vw, vh:vh, label:[p.r.left + p.cap, p.r.top, p.r.right - p.cap, p.r.bottom] };
+      }
+      /* each tooltip takes the first spot that stays on screen and covers neither another circle nor the label:
+         right, above, left, below (above and below may slide sideways); if none is clean, the least covered one */
+      function placeTips(L){
+        var boxes = L.pts.map(function(q){ var X = L.cx + q[0], Y = L.cy + q[1]; return [X - ITEM / 2, Y - ITEM / 2, X + ITEM / 2 + SHADOW, Y + ITEM / 2 + SHADOW]; });
+        function overlap(a, b){ return Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])) * Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1])); }
+        items.forEach(function(a, k){
+          var tip = $('.carc__tip', a), tw = tip.offsetWidth, th = tip.offsetHeight, X = L.cx + L.pts[k][0], Y = L.cy + L.pts[k][1], h = ITEM / 2;
+          var cands = [['r', [X + h + 10, Y - th / 2, X + h + 10 + tw, Y + th / 2], 0]];
+          [['t', Y - h - 8 - th], ['l', null], ['b', Y + h + 8]].forEach(function(o){
+            if(o[0] === 'l'){ cands.push(['l', [X - h - 10 - tw, Y - th / 2, X - h - 10, Y + th / 2], 0]); return; }
+            for(var d = 0; d <= tw / 2 + 32; d += 8){
+              [d, -d].forEach(function(dd){
+                var x0 = Math.max(TIPGAP, Math.min(L.vw - TIPGAP - tw, X - tw / 2 + dd));
+                cands.push([o[0], [x0, o[1], x0 + tw, o[1] + th], x0 - (X - tw / 2)]);
+              });
+            }
+          });
+          var best = null, bestBad = Infinity;
+          for(var i = 0; i < cands.length && bestBad > 0; i++){
+            var bx = cands[i][1], bad = 1000 * outOf(bx, L.vw, L.vh, TIPGAP) + 10 * overlap(bx, L.label);
+            boxes.forEach(function(o, j){ if(j !== k) bad += overlap(bx, o); });
+            if(bad < bestBad){ bestBad = bad; best = cands[i]; }
+          }
+          a.classList.remove('tip-l', 'tip-t', 'tip-b');
+          if(best[0] !== 'r') a.classList.add('tip-' + best[0]);
+          a.style.setProperty('--tx', (best[0] === 't' || best[0] === 'b' ? best[2] : 0).toFixed(1) + 'px');
+        });
+      }
+      function setExp(t, o){ t.setAttribute('aria-expanded', o ? 'true' : 'false'); }
+      function open(t){
+        if(current) setExp(current, false);
+        current = t;
+        var mail = t.getAttribute('href');
+        if(!mail || mail.indexOf('mailto:') !== 0) mail = heroCta ? heroCta.getAttribute('href') : 'mailto:';
+        items.forEach(function(a){ var c = a.getAttribute('data-contact'); a.href = c === 'whatsapp' ? WA : (c === 'phone' ? TEL : mail); });
+        var L = layout(t), fixed = !!(fab && fab.contains(t));
+        arc.classList.add('no-tr'); arc.classList.remove('is-open'); void arc.offsetWidth;
+        arc.style.position = fixed ? 'fixed' : 'absolute';
+        arc.style.left = (L.cx + (fixed ? 0 : window.scrollX)) + 'px';
+        arc.style.top = (L.cy + (fixed ? 0 : window.scrollY)) + 'px';
+        items.forEach(function(a, k){ a.style.setProperty('--x', L.pts[k][0].toFixed(1) + 'px'); a.style.setProperty('--y', L.pts[k][1].toFixed(1) + 'px'); });
+        placeTips(L);
+        void arc.offsetWidth; arc.classList.remove('no-tr'); void arc.offsetWidth;
+        arc.classList.add('is-open');
+        setExp(t, true);
+        items[0].focus({ preventScroll:true });
+      }
+      function close(focusBack){
+        if(!current) return;
+        var t = current; current = null;
+        arc.classList.remove('is-open'); setExp(t, false);
+        if(focusBack) t.focus({ preventScroll:true });
+      }
+      triggers.forEach(function(t){
+        t.setAttribute('aria-controls', 'contact-arc'); setExp(t, false);
+        t.addEventListener('click', function(e){ e.preventDefault(); if(current === t) close(true); else open(t); });
+      });
+      document.addEventListener('keydown', function(e){
+        if(current && (e.key === 'Escape' || e.key === 'Esc')){ e.preventDefault(); close(true); }
+      });
+      /* a click outside closes it; focus returns to the button unless the click focused something else */
+      document.addEventListener('pointerdown', function(e){
+        if(!current || arc.contains(e.target) || current.contains(e.target)) return;
+        var t = current; close(false);
+        setTimeout(function(){ if(current) return; var a = document.activeElement; if(!a || a === document.body || arc.contains(a)) t.focus({ preventScroll:true }); }, 0);
+      }, true);
+      /* moving focus away (Tab) closes it */
+      document.addEventListener('focusin', function(e){ if(current && !arc.contains(e.target) && e.target !== current) close(false); });
+      items.forEach(function(a){ a.addEventListener('click', function(){ setTimeout(function(){ close(false); }, 0); }); });
+      window.addEventListener('resize', function(){ close(false); });
 
-    /* refit on resize (debounced), preserving visual position */
-    var rt = 0;
-    window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(refit, 150); });
-
-    /* pause the auto-run when the belt is off-screen (saves cycles; drag still works) */
-    if('IntersectionObserver' in window){
-      new IntersectionObserver(function(es){
-        es.forEach(function(en){ if(en.isIntersecting){ start(); } else { stop(); } });
-      }, { threshold:0 }).observe(view);
-    }
+      /* the floating pill: shows once the hero buttons leave the screen; hides while the tracks button or the final section is on screen */
+      if(!fab) return;
+      var vis = { hero:true, tcta:false, fin:false };
+      var watch = [['hero', $('.hero__row')], ['tcta', $('.track__cta')], ['fin', $('.final')]];
+      function upd(){
+        var show = !vis.hero && !vis.tcta && !vis.fin;
+        if(show && fab.hidden){
+          fab.hidden = false;
+          if(anim){ fab.classList.remove('in'); void fab.offsetWidth; requestAnimationFrame(function(){ fab.classList.add('in'); }); }
+          else fab.classList.add('in');
+        } else if(!show && !fab.hidden){
+          if(current === fabBtn) close(false);
+          fab.hidden = true; fab.classList.remove('in');
+        }
+      }
+      var fio = io(function(es){
+        es.forEach(function(e){ watch.forEach(function(w){ if(w[1] === e.target) vis[w[0]] = e.isIntersecting; }); });
+        upd();
+      }, { threshold:0 });
+      if(fio) watch.forEach(function(w){ if(w[1]) fio.observe(w[1]); });
+    })();
   })();
 </script>
 
 <!-- ════════════════════════════════════════════════════════════════════
   Benefits · landing page — single page, no build, RTL, mobile-first.
   Built FROM the Marko/Memphis design-library (T10 skeleton) + marko-spec.
-  Real logo (B) embedded as #logo-b symbol. Fonts: Rubik + Varela Round (no mono).
-  Brand character Benjamin (transparent PNGs, decorative) appears in the story,
-  tracks, final CTA and students modal.
-  Content sections faithful to Benefits-syllabus.md:
-    1) הסיפור + מי אני — story + instructor bio
-    2) מתאים לכם אם — who it's for
-    3) מה נלמד — 11-capability climbing ladder
-    4) מה תבנו — Agents/Skills/Plugins/Connectors build-tiles
-    5) המסלולים — four learning tracks
-    6) חגורת הכלים — toolbelt marquee
-    7) FINAL CTA — mailto + students area (modal)
-  Contact = mailto:ben.akiva@tailorplayed.com. Students area button opens platform.benefits-il.dev/login.
-  Animations (all gated behind prefers-reduced-motion):
-    breathing gradient, self-drawing squiggle, floating + mouse-parallax
-    deco, hover-lift Memphis, scroll stagger reveals, dual marquees.
+  Real logo (B) embedded as #logo-b symbol (header, footer, floating contact button).
+  Fonts: Rubik + Varela Round (no mono). Icons: Tabler webfont 3.34.0.
+  Brand character Benjamin (transparent PNGs, decorative) appears in the hero, story,
+  tracks and final CTA. The Cancel Cancer strip carries the crab and the dino from /cancel-cancer/.
+  Refreshed 22.11.2026 (round 2026-11, stage 4): Ben's choices from the stage-3 prototype + his notes.
+  Sections, in order:
+    1) HERO — AI that finally fits, the deck, two buttons (on phones the buttons come before Benjamin)
+    2) MANIFESTO band
+    3) STORY + מי אני — the story in short chunks with a pull-out line, the bio,
+       and the Cancel Cancer strip (link to /cancel-cancer/)
+    4) מתאים לכם אם — who it's for
+    5) OUTCOMES — the promise (with a folder of its four nouns), three outcome cards,
+       and two how cards with the fix diagram
+    6) מה נלמד — 11-capability climbing ladder
+    7) BUILD — 15 chips, title + icon
+    8) המסלולים — four tracks; the full course is the flagship; Benjamin + CTA framed together
+    9) חגורת הכלים — toolbelt marquee, 11 tools
+   10) FINAL CTA — mailto + students area (platform.benefits-il.dev/login)
+    + contact arc: all four "talk to me" buttons (hero, tracks, final, the floating pill) pop one shared
+      arc of WhatsApp / email / phone around their right rounded end, kept inside the screen. Without JS the three
+      page buttons stay mailto links. The floating pill (B logo + label) shows after the hero buttons
+      and hides at the tracks CTA and the final section.
+  Contact = mailto:ben.akiva@tailorplayed.com (each button keeps its own subject). The phone number
+  for WhatsApp / phone is one constant (CONTACT_PHONE) at the top of the script.
+  GSAP 3.12.5 + ScrollTrigger (cdnjs, defer) drive only the fix diagram: it plays once (about 2.4s) when
+  60% in view and resets after leaving the screen downward; without them it shows finished.
+  Animations (all gated behind prefers-reduced-motion; with reduced motion every text is visible,
+  nothing moves, GSAP is never touched and the belt is one complete wrapping list):
+    breathing gradient, self-drawing squiggle, floating + mouse-parallax hero deco, hover-lift Memphis,
+    section reveals, per-item reveals (fit rows, tracks), stamps land (hero, manifesto, final),
+    marker sweep, ladder progress line, outcome-card vignettes, stacking outcome cards, folder tabs,
+    the fix diagram plays its process, chips land like stickers, Benjamin arrives (tracks, final),
+    click sparks on the yellow buttons, Cancel Cancer strip (dino waves, crab panics then sways),
+    draggable toolbelt marquee, floating pill slides in, contact arc pops.
 ═════════════════════════════════════════════════════════════════════════ -->
 
 </body>
