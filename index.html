@@ -302,6 +302,10 @@
   .foot a{ color:var(--green-mint); text-decoration:none; }
   .foot__tag{ font-size:15px; }
 
+  /* Benjamin <picture> wrappers add no box (WebP + PNG fallback); the <source>
+     must not become a flex item either, or it adds one extra gap */
+  picture{ display:contents; } picture > source{ display:none; }
+
   /* ════ ANIMATIONS (gated) ════ */
   @media (prefers-reduced-motion: no-preference){
     @keyframes breathe{ 0%{ transform:scale(1); opacity:.85; } 100%{ transform:scale(1.12); opacity:1; } }
@@ -722,7 +726,7 @@
     <!-- Benjamin snapping fingers (decorative) with a twinkling sparkle by the fingertips.
          Desktop: absolute at the hero's left. Tablet: in-flow between the deck and the buttons; phones (≤520): under the buttons. -->
     <div class="hero__snap" aria-hidden="true">
-      <img src="assets/benjamin/snap.png" alt="" loading="eager" fetchpriority="high" width="366" height="960">
+      <picture><source srcset="assets/benjamin/snap.webp" type="image/webp"><img src="assets/benjamin/snap.png" alt="" loading="eager" fetchpriority="high" width="366" height="960"></picture>
       <span class="snap-star" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c.6 5.2 1.4 7.6 2.9 9.1S18.8 11.4 24 12c-5.2.6-7.6 1.4-9.1 2.9S12.6 18.8 12 24c-.6-5.2-1.4-7.6-2.9-9.1S5.2 12.6 0 12c5.2-.6 7.6-1.4 9.1-2.9S11.4 5.2 12 0Z"/></svg>
       </span>
@@ -770,7 +774,7 @@
           <p class="bio__role">מנחה הקורס</p>
           <p class="bio__body">בן עקיבא הוא מייסד TailorPlayed. <span class="nw">ב-PassportCard</span> הוא יזם את תפקיד <span class="nw">ה-AI Champion</span>, בנה הדרכות מותאמות אישית לצוותים טכניים, לצוותי הדרכה ולעובדים ללא רקע טכני, וליווה מנהלים ואת מנכ"ל הארגון. בהמשך הוביל קורסים וסדנאות AI לארגונים ולהנהלות בישראל ובחו"ל, בעברית ובאנגלית. מאחוריו ניסיון כמדריך, סטודנט מלווה ורכז בתוכניות נוער, משלחות ומחנות קיץ בארץ ובחו"ל, שם כתב והעביר תכנים חינוכיים. הוא בוגר הטכניון בהנדסת תחבורה ודרכים ועבד כמפתח תוכנה לפני שעבר לתחום <span class="nw">ה-AI</span>.</p>
         </div>
-        <img class="benjamin benjamin--story" src="assets/benjamin/presenting.png" alt="" aria-hidden="true" loading="lazy" width="269" height="478">
+        <picture><source srcset="assets/benjamin/presenting.webp" type="image/webp"><img class="benjamin benjamin--story" src="assets/benjamin/presenting.png" alt="" aria-hidden="true" loading="lazy" width="269" height="478"></picture>
       </div>
     </div>
     <!-- Cancel Cancer: a place of its own, in the Cancel Cancer page's colors (coral + green band, ink wave).
@@ -1026,7 +1030,7 @@
     </div>
     <div class="track__foot">
       <a class="track__cta" href="mailto:ben.akiva@tailorplayed.com?subject=Benefits%20-%20%D7%94%D7%AA%D7%90%D7%9E%D7%AA%20%D7%9E%D7%A1%D7%9C%D7%95%D7%9C"><i class="ti ti-mail" aria-hidden="true"></i> דברו איתי ונתאים מסלול</a>
-      <img class="benjamin benjamin--tracks" src="assets/benjamin/thumbsup.png" alt="" aria-hidden="true" loading="lazy" width="213" height="508">
+      <picture><source srcset="assets/benjamin/thumbsup.webp" type="image/webp"><img class="benjamin benjamin--tracks" src="assets/benjamin/thumbsup.png" alt="" aria-hidden="true" loading="lazy" width="213" height="508"></picture>
     </div>
   </div>
 </section>
@@ -1067,7 +1071,7 @@
   <span class="final__deco d-circle" style="top:-40px; left:-30px; width:170px; height:170px; border:3px solid rgba(255,255,255,.14);"></span>
   <span class="final__deco d-sq" style="bottom:36px; right:9%; width:74px; height:74px; background:var(--coral); transform:rotate(14deg);"></span>
   <span class="final__deco d-circle" style="top:60px; right:14%; width:30px; height:30px; background:var(--sunshine); border:3px solid var(--ink);"></span>
-  <img class="benjamin benjamin--final" src="assets/benjamin/wave.png" alt="" aria-hidden="true" loading="lazy" width="235" height="508">
+  <picture><source srcset="assets/benjamin/wave.webp" type="image/webp"><img class="benjamin benjamin--final" src="assets/benjamin/wave.png" alt="" aria-hidden="true" loading="lazy" width="235" height="508"></picture>
   <div class="final__in">
     <h2>רוצים AI <span class="nw">שסוף סוף</span> <span class="stamp slam slam--fin">מתאים לכם?</span></h2>
     <p>כתבו לי כמה מילים על העבודה שלכם, ונבדוק יחד איזה מסלול יתאים לכם.</p>
