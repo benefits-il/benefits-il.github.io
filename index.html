@@ -520,25 +520,29 @@
   .fab__btn[aria-expanded="true"] .fab__logo{ transform:rotate(-8deg) scale(1.05); }
   .fab__btn:focus-visible{ outline:3px solid var(--ink); outline-offset:3px; border-radius:999px; }
 
-  /* ════ CONTACT MENU — one compact panel of WhatsApp / email / phone, shared by every «דברו איתי».
-     The script places it above the clicked button (below when there is no room), right edges aligned, 16px inside the
-     visible screen; transform-origin sits on the panel edge nearest the button, at its right cap. ════ */
-  .cmenu{ position:fixed; left:0; top:0; z-index:160; width:240px; height:86px; display:flex; gap:6px; padding:8px 9px;
-    background:var(--canvas); border:3px solid var(--ink); border-radius:18px; box-shadow:0 6px 0 0 var(--ink);
+  /* ════ CONTACT POP — three round icon buttons in their own colours, no frame, floating above the clicked
+     «דברו איתי» (below it when there is no room). The script places the row (right edges aligned, 16px inside the
+     visible screen) and gives each circle the way back to the button's right cap (--fx/--fy) for the pop. ════ */
+  .cpop{ position:fixed; left:0; top:0; z-index:160; display:flex; gap:12px;
     /* the safe-area insets, read by the script */
     scroll-margin:env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    visibility:hidden; opacity:0; transform:translateY(calc(var(--dy, 1) * 4px)) scale(.96); }
-  .cmenu[hidden]{ display:none; }
-  .cmenu.is-open{ visibility:visible; opacity:1; transform:none; }
-  .cmenu.is-closing{ visibility:visible; opacity:0; transform:translateY(calc(var(--dy, 1) * 2px)) scale(.98); }
-  /* RTL row: WhatsApp on the right, email in the centre, phone on the left; the whole tile is the link */
-  .cmenu__item{ flex:none; width:68px; height:64px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
-    color:var(--ink); text-decoration:none; }
-  .cmenu__badge{ display:grid; place-items:center; width:32px; height:32px; border-radius:50%; border:2px solid var(--ink); background:var(--canvas); color:var(--ink); font-size:18px; }
-  .cmenu__item--wa .cmenu__badge{ background:var(--green-mint); }
-  .cmenu__label{ font-family:'Rubik', system-ui, sans-serif; font-size:13px; font-weight:600; line-height:18px; }
-  .cmenu__item:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; border-radius:12px; }
-  @media (hover:hover){ .cmenu__item:hover{ box-shadow:inset 0 0 0 2px var(--anchor); } }
+    visibility:hidden; }
+  .cpop[hidden]{ display:none; }
+  .cpop.is-open, .cpop.is-closing{ visibility:visible; }
+  /* RTL row: WhatsApp on the right, email in the middle, phone on the left; white glyph on the brand colour */
+  .cpop__item{ position:relative; flex:none; width:52px; height:52px; display:grid; place-items:center; border-radius:50%;
+    border:2.5px solid var(--ink); box-shadow:0 4px 0 0 var(--ink); color:#fff; font-size:26px; text-decoration:none; }
+  .cpop__item--wa{ --i:0; background:#1A9E4B; }
+  .cpop__item--mail{ --i:1; background:#EA4335; }
+  .cpop__item--tel{ --i:2; background:#0A84FF; }
+  .cpop__item:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; border-radius:50%; }
+  /* desktop: the word in a small tooltip above the circle (below it when the row sits under the button) */
+  .cpop__tip{ position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%); height:28px; display:flex; align-items:center; padding:0 10px;
+    background:var(--ink); color:#fff; border:2px solid var(--canvas); border-radius:999px; font-family:'Rubik', system-ui, sans-serif; font-weight:700; font-size:15px;
+    white-space:nowrap; pointer-events:none; opacity:0; }
+  .cpop.tips-below .cpop__tip{ bottom:auto; top:calc(100% + 12px); }
+  .cpop__item:focus-visible .cpop__tip{ opacity:1; }
+  @media (hover:hover){ .cpop__item:hover .cpop__tip{ opacity:1; } }
 
   /* ════ bug fixes (round 2026-11) ════ */
   /* the footer slogan never breaks inside its English part */
@@ -673,13 +677,20 @@
     @keyframes crabScuttle{ 0%,100%{ transform:translateX(0); } 50%{ transform:translateX(-10px); } }
     @keyframes crabSway{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(-2.5deg); } }
 
-    /* floating pill slides in; the contact menu opens in 160ms from 96% and closes in 100ms (no stagger, no bounce) */
+    /* floating pill slides in */
     .fab{ transition:opacity .25s ease, transform .25s ease; }
     .fab:not(.in){ opacity:0; transform:translateY(20px); }
     .fab__btn{ transition:transform .15s, box-shadow .15s, background-color .15s, color .15s; }
     .fab__logo{ transition:transform .3s cubic-bezier(.34,1.56,.64,1); }
-    .cmenu.is-open{ transition:opacity .16s cubic-bezier(.2,.8,.25,1), transform .16s cubic-bezier(.2,.8,.25,1); }
-    .cmenu.is-closing{ transition:opacity .1s ease-in, transform .1s ease-in; }
+    /* the pop: each circle springs out of the button's right cap to its place, right to left, 60ms apart */
+    .cpop.is-open .cpop__item{ animation:cpopIn .26s both; animation-delay:calc(var(--i) * 60ms); }
+    @keyframes cpopIn{
+      0%{ transform:translate(var(--fx, 0px), var(--fy, 0px)) scale(0); animation-timing-function:cubic-bezier(.2,.8,.3,1); }
+      65%{ transform:translate(0, 0) scale(1.12); animation-timing-function:cubic-bezier(.4,0,.6,1); }
+      100%{ transform:translate(0, 0) scale(1); } }
+    .cpop.is-closing .cpop__item{ animation:cpopOut .12s ease-in both; }
+    @keyframes cpopOut{ from{ transform:scale(1); opacity:1; } to{ transform:scale(.6); opacity:0; } }
+    .cpop__tip{ transition:opacity .15s ease; }
   }
   @media (prefers-reduced-motion: no-preference) and (max-width:520px){ body.anim .ladder::after{ right:28px; } }
 </style>
@@ -1099,19 +1110,19 @@
   <button class="fab__btn" type="button"><span class="fab__logo" aria-hidden="true"><svg focusable="false"><use href="#logo-b"/></svg></span>דברו איתי</button>
 </div>
 
-<!-- ════ CONTACT MENU — one compact panel of WhatsApp / email / phone, shared by every «דברו איתי»
-     (hero, tracks, final, the floating pill). The script opens it just above the clicked button (below when there is
-     no room), gives the links their href (WhatsApp and phone from CONTACT_PHONE, email from the clicked button's own
-     mailto) and keeps it inside the screen. Without JS it stays hidden and the three page buttons stay mailto links. ════ -->
-<div class="cmenu" id="contact-menu" hidden>
-  <a class="cmenu__item cmenu__item--wa" data-contact="whatsapp" target="_blank" rel="noopener"><span class="cmenu__badge" aria-hidden="true"><i class="ti ti-brand-whatsapp"></i></span><span class="cmenu__label">וואטסאפ</span></a>
-  <a class="cmenu__item" data-contact="mail"><span class="cmenu__badge" aria-hidden="true"><i class="ti ti-mail"></i></span><span class="cmenu__label">מייל</span></a>
-  <a class="cmenu__item" data-contact="phone"><span class="cmenu__badge" aria-hidden="true"><i class="ti ti-phone"></i></span><span class="cmenu__label">טלפון</span></a>
+<!-- ════ CONTACT POP — three round icon buttons (WhatsApp / email / phone, each in its own colour) that pop out above
+     whichever «דברו איתי» was clicked (hero, tracks, final, the floating pill); below it when there is no room. The
+     script gives the links their href (WhatsApp and phone from CONTACT_PHONE, email from the clicked button's own
+     mailto) and keeps them inside the screen. Without JS it stays hidden and the three page buttons stay mailto links. ════ -->
+<div class="cpop" id="contact-menu" hidden>
+  <a class="cpop__item cpop__item--wa" data-contact="whatsapp" target="_blank" rel="noopener" aria-label="וואטסאפ"><i class="ti ti-brand-whatsapp" aria-hidden="true"></i><span class="cpop__tip" aria-hidden="true">וואטסאפ</span></a>
+  <a class="cpop__item cpop__item--mail" data-contact="mail" aria-label="מייל"><i class="ti ti-mail" aria-hidden="true"></i><span class="cpop__tip" aria-hidden="true">מייל</span></a>
+  <a class="cpop__item cpop__item--tel" data-contact="phone" aria-label="טלפון"><i class="ti ti-phone" aria-hidden="true"></i><span class="cpop__tip" aria-hidden="true">טלפון</span></a>
 </div>
 
 <script>
-  /* the phone number behind the contact menu's WhatsApp and phone links. Ben still needs to confirm it.
-     (The menu's email link is the clicked button's own mailto.) */
+  /* the phone number behind the contact pop's WhatsApp and phone links. Ben still needs to confirm it.
+     (The pop's email link is the clicked button's own mailto.) */
   var CONTACT_PHONE = '+972524459185';
 
   (function(){
@@ -1389,56 +1400,59 @@
       });
     })();
 
-    /* ── contact menu: every «דברו איתי» (hero, tracks, final, the floating pill) opens one compact panel of
-          WhatsApp / email / phone just above itself (below when there is no room), right edges aligned and 16px inside
-          the visible screen. Focus stays on the button; Tab goes on into the panel. Only one panel is open at a time.
-          The three CTAs stay mailto links in the HTML; this only takes over their click. ── */
+    /* ── contact pop: every «דברו איתי» (hero, tracks, final, the floating pill) pops three round icon buttons
+          (WhatsApp / email / phone) in a row just above itself (below when there is no room), right edges aligned and
+          16px inside the visible screen. Focus stays on the button; Tab goes on into the row. Only one row is open
+          at a time. The three CTAs stay mailto links in the HTML; this only takes over their click. ── */
     (function(){
-      var menu = $('#contact-menu'); if(!menu) return;
-      menu.hidden = false; /* from here CSS keeps it invisible until it opens */
-      var items = $$('.cmenu__item', menu), fab = $('.fab'), fabBtn = fab && $('.fab__btn', fab);
+      var pop = $('#contact-menu'); if(!pop) return;
+      pop.hidden = false; /* from here CSS keeps it invisible until it opens */
+      var items = $$('.cpop__item', pop), fab = $('.fab'), fabBtn = fab && $('.fab__btn', fab);
       var heroCta = $('.hero__btn:not(.hero__btn--ghost)');
       var triggers = $$('.hero__btn:not(.hero__btn--ghost), .track__cta, .final__btn:not(.final__btn--ghost)');
       if(fabBtn) triggers.push(fabBtn);
       var WA = 'https://wa.me/' + CONTACT_PHONE.replace(/\D/g, ''), TEL = 'tel:' + CONTACT_PHONE.replace(/[^\d+]/g, '');
-      var PW = 240, PH = 86, PSHADOW = 6, EDGE = 16, CLEAR = 10, ORIGIN_IN = 18, LIFT = 3; /* LIFT: the page's buttons rise up to 3px on hover */
+      /* circle 52px + its 4px solid shadow, 12px apart; 10px clear of the button; the buttons lift up to 3px on hover;
+         a hover tooltip needs about 36px beside the row */
+      var D = 52, CSHADOW = 4, GAP = 12, ROW = 3 * D + 2 * GAP, EDGE = 16, CLEAR = 10, LIFT = 3, TIP = (window.matchMedia && window.matchMedia('(hover: hover)').matches) ? 36 : 0;
       var current = null, closeT = 0, raf = 0;
 
-      /* the button at rest (its own hover/press lift taken out) and the drop of its solid shadow */
       function rest(t){
         var b = t.getBoundingClientRect(), m = getComputedStyle(t).transform, dx = 0, dy = 0;
         if(m && m !== 'none' && window.DOMMatrixReadOnly){ var M = new DOMMatrixReadOnly(m); dx = M.m41; dy = M.m42; }
         return { left:b.left - dx, top:b.top - dy, right:b.right - dx, bottom:b.bottom - dy, height:b.height };
       }
       function shadowDrop(t){ var m = getComputedStyle(t).boxShadow.match(/(-?[\d.]+)px\s+(-?[\d.]+)px/); return m ? Math.max(0, parseFloat(m[2])) : 0; }
-      /* the visible screen (pinch zoom included) and the safe-area insets (the panel carries them as scroll-margin) */
       function view(){
         var vv = window.visualViewport;
         return vv ? { x:vv.offsetLeft, y:vv.offsetTop, w:vv.width, h:vv.height } : { x:0, y:0, w:document.documentElement.clientWidth, h:window.innerHeight };
       }
       function insets(){
-        var cs = getComputedStyle(menu);
+        var cs = getComputedStyle(pop);
         return { t:parseFloat(cs.scrollMarginTop) || 0, r:parseFloat(cs.scrollMarginRight) || 0, b:parseFloat(cs.scrollMarginBottom) || 0, l:parseFloat(cs.scrollMarginLeft) || 0 };
       }
-      /* above the button with 10px of clear space (shadows counted); below if it does not fit; if neither fits, the
-         side with more room, clamped inside the same 16px insets. The button's visible shape: its bottom plus its solid
-         shadow stays put when hover lifts it (the shadow grows by the lift); its top can rise by the hover lift after
-         the tap, so that lift is kept free too. 1px of slack covers the brief press state. */
+      /* above the button, 10px clear of its visible shape (the hover lift and the shadows counted; 1px of slack for
+         the press state); below if it does not fit; if neither fits, the side with more room, clamped. Each circle
+         gets the way back to the button's right cap, where the pop starts. */
       function place(t){
         var r = rest(t), c = t.getBoundingClientRect(), v = view(), s = insets(), drop = shadowDrop(t);
         var visTop = Math.min(c.top, r.top - LIFT), visBottom = c.bottom + drop;
         var minX = v.x + EDGE + s.l, maxX = v.x + v.w - EDGE - s.r, minY = v.y + EDGE + s.t, maxY = v.y + v.h - EDGE - s.b;
-        var left = Math.max(minX, Math.min(maxX - PW, r.right - PW));
-        var aboveTop = visTop - CLEAR - 1 - PSHADOW - PH, belowTop = visBottom + CLEAR + 1, above;
-        if(aboveTop >= minY) above = true;
-        else if(belowTop + PH + PSHADOW <= maxY) above = false;
+        var left = Math.max(minX, Math.min(maxX - ROW, r.right - ROW));
+        var aboveTop = visTop - CLEAR - 1 - CSHADOW - D, belowTop = visBottom + CLEAR + 1, above;
+        if(aboveTop - TIP >= minY) above = true;
+        else if(belowTop + D + CSHADOW + TIP <= maxY) above = false;
         else above = (visTop - minY) >= (maxY - visBottom);
-        var top = Math.max(minY, Math.min(maxY - PH - PSHADOW, above ? aboveTop : belowTop));
-        var ox = Math.max(ORIGIN_IN, Math.min(PW - ORIGIN_IN, r.right - r.height / 2 - left));
-        menu.style.left = left.toFixed(1) + 'px';
-        menu.style.top = top.toFixed(1) + 'px';
-        menu.style.transformOrigin = ox.toFixed(1) + 'px ' + (above ? PH : 0) + 'px';
-        menu.style.setProperty('--dy', above ? '1' : '-1');
+        var top = Math.max(minY, Math.min(maxY - D - CSHADOW, above ? aboveTop : belowTop));
+        pop.style.left = left.toFixed(1) + 'px';
+        pop.style.top = top.toFixed(1) + 'px';
+        pop.classList.toggle('tips-below', !above);
+        var capX = r.right - r.height / 2, capY = (r.top + r.bottom) / 2;
+        items.forEach(function(a){
+          var sx = left + a.offsetLeft + D / 2, sy = top + D / 2;
+          a.style.setProperty('--fx', (capX - sx).toFixed(1) + 'px');
+          a.style.setProperty('--fy', (capY - sy).toFixed(1) + 'px');
+        });
       }
       function setExp(t, o){ t.setAttribute('aria-expanded', o ? 'true' : 'false'); }
       function open(t){
@@ -1448,23 +1462,24 @@
         var mail = t.getAttribute('href');
         if(!mail || mail.indexOf('mailto:') !== 0) mail = heroCta ? heroCta.getAttribute('href') : 'mailto:';
         items.forEach(function(a){ var c = a.getAttribute('data-contact'); a.href = c === 'whatsapp' ? WA : (c === 'phone' ? TEL : mail); });
-        menu.classList.remove('is-open', 'is-closing');
+        pop.classList.remove('is-open', 'is-closing');
         place(t);
-        void menu.offsetWidth;
-        menu.classList.add('is-open');
+        void pop.offsetWidth; /* restart the pop */
+        pop.classList.add('is-open');
         setExp(t, true);
       }
       function close(focusBack){
         if(!current) return;
         var t = current; current = null; setExp(t, false);
-        menu.classList.remove('is-open'); menu.classList.add('is-closing');
-        clearTimeout(closeT); closeT = setTimeout(function(){ menu.classList.remove('is-closing'); }, 110);
+        pop.classList.remove('is-open');
+        clearTimeout(closeT);
+        if(anim){ pop.classList.add('is-closing'); closeT = setTimeout(function(){ pop.classList.remove('is-closing'); }, 130); }
         if(focusBack) t.focus({ preventScroll:true });
       }
-      /* the next stop in the page's tab order after the button (used when Tab leaves the panel) */
+      /* the next stop in the page's tab order after the button (used when Tab leaves the row) */
       function nextTabbable(t){
         var all = $$('a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])').filter(function(e){
-          return !menu.contains(e) && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden';
+          return !pop.contains(e) && e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden';
         });
         var i = all.indexOf(t);
         return i >= 0 ? all[i + 1] || null : null;
@@ -1484,12 +1499,12 @@
       });
       /* a tap outside closes it; focus returns to the button unless the tap focused something else */
       document.addEventListener('pointerdown', function(e){
-        if(!current || menu.contains(e.target) || current.contains(e.target)) return;
+        if(!current || pop.contains(e.target) || current.contains(e.target)) return;
         var t = current; close(false);
-        setTimeout(function(){ if(current) return; var a = document.activeElement; if(!a || a === document.body || menu.contains(a)) t.focus({ preventScroll:true }); }, 0);
+        setTimeout(function(){ if(current) return; var a = document.activeElement; if(!a || a === document.body || pop.contains(a)) t.focus({ preventScroll:true }); }, 0);
       }, true);
       /* focus moving elsewhere closes it */
-      document.addEventListener('focusin', function(e){ if(current && !menu.contains(e.target) && e.target !== current) close(false); });
+      document.addEventListener('focusin', function(e){ if(current && !pop.contains(e.target) && e.target !== current) close(false); });
       items.forEach(function(a){ a.addEventListener('click', function(){ setTimeout(function(){ close(false); }, 0); }); });
       /* follow the button on scroll and resize; close once it has left the visible screen */
       function track(){
@@ -1548,10 +1563,10 @@
     8) המסלולים — four tracks; the full course is the flagship; Benjamin + CTA framed together
     9) חגורת הכלים — toolbelt marquee, 11 tools
    10) FINAL CTA — mailto + students area (platform.benefits-il.dev/login)
-    + contact menu: all four "talk to me" buttons (hero, tracks, final, the floating pill) open one compact
-      panel of WhatsApp / email / phone just above themselves (below when there is no room), kept inside the
-      visible screen. Without JS the three page buttons stay mailto links. The floating pill (B logo + label)
-      shows after the hero buttons and hides at the tracks CTA and the final section.
+    + contact pop: all four "talk to me" buttons (hero, tracks, final, the floating pill) pop three round icon
+      buttons (WhatsApp / email / phone, each in its own colour) in a row just above themselves (below when there
+      is no room), kept inside the visible screen. Without JS the three page buttons stay mailto links. The floating
+      pill (B logo + label) shows after the hero buttons and hides at the tracks CTA and the final section.
   Contact = mailto:ben.akiva@tailorplayed.com (each button keeps its own subject). The phone number
   for WhatsApp / phone is one constant (CONTACT_PHONE) at the top of the script.
   GSAP 3.12.5 + ScrollTrigger (cdnjs, defer) drive only the fix diagram: it plays once (about 2.4s) when
@@ -1563,7 +1578,7 @@
     marker sweep, ladder progress line, outcome-card vignettes, stacking outcome cards, folder tabs,
     the fix diagram plays its process, chips land like stickers, Benjamin arrives (tracks, final),
     click sparks on the yellow buttons, Cancel Cancer strip (dino waves, crab panics then sways),
-    draggable toolbelt marquee, floating pill slides in, contact menu opens and closes (160ms / 100ms).
+    draggable toolbelt marquee, floating pill slides in, contact pop (circles spring out of the button, 60ms apart).
 ═════════════════════════════════════════════════════════════════════════ -->
 
 </body>
