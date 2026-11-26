@@ -47,6 +47,10 @@
     .deco{ animation:floaty var(--fdur,7s) ease-in-out infinite; }
   }
 </style>
+<!-- Umami Cloud: anonymous, cookieless page-view counts; the query string, the hash and any identifier are never sent, and Do Not Track is honoured -->
+<!-- This plain script loads before the async tracker, so filterSitePayload exists when the tracker sends -->
+<script src="/usage-filter.js?v=251d41cd8975"></script>
+<script async defer src="https://cloud.umami.is/script.js" data-website-id="1d2ef7bf-6dc5-45a7-9a96-54dc8b1b33a5" data-domains="benefits-il.dev" data-exclude-search="true" data-exclude-hash="true" data-do-not-track="true" data-before-send="filterSitePayload"></script>
 </head>
 <body>
 <div class="glow" aria-hidden="true"></div>
